@@ -1,22 +1,47 @@
 package vip.marcel.vipperms.spigot.vipperms;
 
-import org.bukkit.plugin.Plugin;
+import com.google.common.collect.Maps;
 import org.bukkit.plugin.java.JavaPlugin;
-import vip.marcel.vipperms.spigot.vipperms.utils.config.DatabaseConfiguration;
+import vip.marcel.vipperms.spigot.vipperms.api.PermissionsGroup;
+import vip.marcel.vipperms.spigot.vipperms.api.PermissionsPlayer;
+import vip.marcel.vipperms.spigot.vipperms.listener.AsyncPlayerChatListener;
+import vip.marcel.vipperms.spigot.vipperms.listener.PlayerLoginListener;
+import vip.marcel.vipperms.spigot.vipperms.plugin.groups.PermissionsGroupCache;
+import vip.marcel.vipperms.spigot.vipperms.plugin.groups.PermissionsGroupService;
+import vip.marcel.vipperms.spigot.vipperms.plugin.players.PermissionsPlayerCache;
+import vip.marcel.vipperms.spigot.vipperms.plugin.players.PermissionsPlayerService;
+import vip.marcel.vipperms.spigot.vipperms.utils.config.SettingsConfiguration;
 import vip.marcel.vipperms.spigot.vipperms.utils.database.MySQL;
 
-public final class VIPPerms extends JavaPlugin {
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+
+public class VIPPerms extends JavaPlugin {
 
     private static VIPPerms instance;
 
-    private DatabaseConfiguration databaseConfiguration;
+    private String prefix, noPermissions, unknownCommand;
+
+    private Map<UUID, PermissionsGroup> permissionsGroups;
+    private Map<UUID, PermissionsPlayer> permissionsPlayers;
+
+    private SettingsConfiguration settingsConfiguration;
 
     private MySQL mySQL;
+
+    private PermissionsGroupService permissionsGroupService;
+    private PermissionsGroupCache permissionsGroupCache;
 
     @Override
     public void onEnable() {
         instance = this;
+
         this.init();
+        this.loadGroupsCache();
+        this.registerListeners();
     }
 
     @Override
@@ -29,14 +54,86 @@ public final class VIPPerms extends JavaPlugin {
     }
 
     private void init() {
-        this.databaseConfiguration = new DatabaseConfiguration();
+        this.prefix = "§8§l┃ §bVPerms §8► §7";
+        this.noPermissions = "Du hast keinen Zugriff auf diesen Befehl";
+        this.unknownCommand = "Dieser Befehl existiert nicht.";
+
+        this.permissionsGroups = Maps.newHashMap();
+        this.permissionsPlayers = Maps.newHashMap();
+
+        this.settingsConfiguration = new SettingsConfiguration();
 
         this.mySQL = new MySQL();
         this.mySQL.connect();
     }
 
-    public DatabaseConfiguration getDatabaseConfiguration() {
-        return this.databaseConfiguration;
+    private void loadGroupsCache() {
+        for(UUID uuid : this.mySQL.getAllPermissionsGroups()) {
+            final PermissionsGroup permissionsGroup = new PermissionsGroupService(uuid);
+            this.permissionsGroups.put(uuid, permissionsGroup);
+            getLogger().log(Level.INFO, "Group '" + permissionsGroup.getName() + "' loaded into cache.");
+        }
+    }
+
+    private void registerListeners() {
+        new PlayerLoginListener();
+        new AsyncPlayerChatListener();
+    }
+
+    public PermissionsGroup getPermissionsGroup(UUID uuid) {
+        return new PermissionsGroupCache(uuid, this.permissionsGroups);
+    }
+
+    public void getPermissionsGroup(UUID uuid, Consumer<PermissionsGroup> callback) {
+        CompletableFuture.runAsync(() -> {
+            callback.accept(new PermissionsGroupService(uuid));
+        });
+    }
+
+    public PermissionsGroup getPermissionsGroup(String name) {
+        return new PermissionsGroupCache(name, this.permissionsGroups);
+    }
+
+    public void getPermissionsGroup(String name, Consumer<PermissionsGroup> callback) {
+        CompletableFuture.runAsync(() -> {
+            callback.accept(new PermissionsGroupService(name));
+        });
+    }
+
+    public PermissionsPlayer getPermissionsPlayer(UUID uuid) {
+        return new PermissionsPlayerCache(uuid, this.permissionsPlayers);
+    }
+
+    public void getPermissionsPlayer(UUID uuid, Consumer<PermissionsPlayer> callback, boolean reloadCache) {
+        CompletableFuture.runAsync(() -> {
+            final PermissionsPlayerService permissionsPlayerService = new PermissionsPlayerService(uuid);
+
+            if(!this.permissionsPlayers.containsKey(permissionsPlayerService.getUUID()) | reloadCache) {
+                this.permissionsPlayers.put(permissionsPlayerService.getUUID(), permissionsPlayerService);
+            }
+
+            callback.accept(permissionsPlayerService);
+        });
+    }
+
+    public PermissionsPlayer getPermissionsPlayer(String name) {
+        return new PermissionsPlayerCache(name, this.permissionsPlayers);
+    }
+
+    public String getPrefix() {
+        return this.prefix;
+    }
+
+    public String getNoPermissions() {
+        return this.noPermissions;
+    }
+
+    public String getUnknownCommand() {
+        return this.unknownCommand;
+    }
+
+    public SettingsConfiguration getSettingsConfiguration() {
+        return this.settingsConfiguration;
     }
 
     public MySQL getMySQL() {

@@ -13,6 +13,7 @@
     <bytecodeTargetLevel>
       <module name="Proxy VIPPerms" target="17" />
       <module name="Spigot VIPPerms" target="17" />
+      <module name="VIPPerms Core" target="18" />
     </bytecodeTargetLevel>
   </component>
 </project>

@@ -1,15 +1,19 @@
 package vip.marcel.vipperms.spigot.vipperms.utils.database;
 
 import vip.marcel.vipperms.spigot.vipperms.VIPPerms;
+import vip.marcel.vipperms.spigot.vipperms.utils.config.DatabaseConfiguration;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
 public class MySQL {
+
+    private DatabaseConfiguration databaseConfiguration;
 
     private final String hostname, database, username, password;
     protected String tables;
@@ -21,12 +25,14 @@ public class MySQL {
     private DatabasePlayers databasePlayers;
 
     public MySQL() {
-        this.hostname = VIPPerms.getInstance().getDatabaseConfiguration().getString("Database.MySQL.Hostname");
-        this.database = VIPPerms.getInstance().getDatabaseConfiguration().getString("Database.MySQL.Database");
-        this.tables = VIPPerms.getInstance().getDatabaseConfiguration().getString("Database.MySQL.Tables");
-        this.username = VIPPerms.getInstance().getDatabaseConfiguration().getString("Database.MySQL.Username");
-        this.password = VIPPerms.getInstance().getDatabaseConfiguration().getString("Database.MySQL.Password");
-        this.port = VIPPerms.getInstance().getDatabaseConfiguration().getInteger("Database.MySQL.Port");
+        this.databaseConfiguration = new DatabaseConfiguration();
+
+        this.hostname = this.databaseConfiguration.getString("Database.MySQL.Hostname");
+        this.database = this.databaseConfiguration.getString("Database.MySQL.Database");
+        this.tables = this.databaseConfiguration.getString("Database.MySQL.Tables");
+        this.username = this.databaseConfiguration.getString("Database.MySQL.Username");
+        this.password = this.databaseConfiguration.getString("Database.MySQL.Password");
+        this.port = this.databaseConfiguration.getInteger("Database.MySQL.Port");
 
         this.databaseGroups = new DatabaseGroups();
         this.databasePlayers = new DatabasePlayers();
@@ -46,7 +52,7 @@ public class MySQL {
             }
 
             {
-                PreparedStatement statement = this.connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + this.tables + "players(id INT AUTO_INCREMENT PRIMARY KEY, UUID TEXT, Name TEXT, Group TEXT, Permissions TEXT)");
+                PreparedStatement statement = this.connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + this.tables + "players(id INT AUTO_INCREMENT PRIMARY KEY, UUID TEXT, Name TEXT, Group TEXT, GroupExpires TEXT, Permissions TEXT)");
                 statement.executeUpdate();
                 statement.close();
             }
@@ -54,6 +60,8 @@ public class MySQL {
         } catch(SQLException e) {
             e.printStackTrace();
         }
+
+        this.databaseGroups.createDefaultGroup();
     }
 
     public void disconnect() {
@@ -65,6 +73,10 @@ public class MySQL {
         } catch(SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<UUID> getAllPermissionsGroups() {
+        return this.databaseGroups.loadAllGroups();
     }
 
     public Connection getConnection() {

@@ -1,22 +1,17 @@
 package vip.marcel.vipperms.spigot.vipperms.api;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public interface PermissionsGroup {
+public interface PermissionsPlayer {
 
     UUID getUUID();
 
     String getName();
 
-    String getPrefix();
+    UUID getGroupId();
 
-    String getSuffix();
-
-    String getColor();
-
-    List<UUID> getInterhances();
+    long getGroupExpires();
 
     Map<String, Long> getPermissions();
 
