@@ -1,5 +1,6 @@
 package vip.marcel.vipperms.spigot.vipperms.listener;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -11,6 +12,10 @@ import vip.marcel.vipperms.spigot.vipperms.api.PermissionsPlayer;
 
 public class AsyncPlayerChatListener implements Listener {
 
+    public AsyncPlayerChatListener() {
+        Bukkit.getServer().getPluginManager().registerEvents(this, VIPPerms.getInstance());
+    }
+
     @EventHandler
     public void onAsyncPlayerChatEvent(AsyncPlayerChatEvent event) {
         final Player player = event.getPlayer();
@@ -21,11 +26,11 @@ public class AsyncPlayerChatListener implements Listener {
             final PermissionsPlayer permissionsPlayer = VIPPerms.getInstance().getPermissionsPlayer(player.getUniqueId());
             final PermissionsGroup permissionsGroup = VIPPerms.getInstance().getPermissionsGroup(permissionsPlayer.getGroupId());
 
-            format.replace("{prefix}", permissionsGroup.getPrefix());
-            format.replace("{color}", permissionsGroup.getColor());
-            format.replace("{suffix}", permissionsGroup.getSuffix());
-            format.replace("{player}", player.getName());
-            format.replace("{message}", event.getMessage());
+            format = format.replace("{prefix}", permissionsGroup.getPrefix());
+            format = format.replace("{color}", permissionsGroup.getColor());
+            format = format.replace("{suffix}", permissionsGroup.getSuffix());
+            format = format.replace("{player}", player.getName());
+            format = format.replace("{message}", event.getMessage());
 
             event.setFormat(format);
 

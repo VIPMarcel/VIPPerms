@@ -41,7 +41,7 @@ public class DatabasePlayers {
 
     public void createPlayer(UUID uuid, String name) {
         try {
-            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("INSERT INTO " + table + "(UUID, Name, Group, GroupExpires, Permissions) VALUES (?, ?, ?, ?, ?)");
+            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("INSERT INTO " + table + "(UUID, PlayerName, GroupId, GroupExpires, Permissions) VALUES (?, ?, ?, ?, ?)");
             statement.setString(1, uuid.toString());
             statement.setString(2, name);
             statement.setString(3, UUID.fromString("00000183-31c6-bb2a-0000-000000000000").toString());
@@ -63,7 +63,7 @@ public class DatabasePlayers {
             final ResultSet resultSet = statement.executeQuery();
 
             while(resultSet.next()) {
-                return resultSet.getString("Name");
+                return resultSet.getString("PlayerName");
             }
 
             resultSet.close();
@@ -82,7 +82,7 @@ public class DatabasePlayers {
             final ResultSet resultSet = statement.executeQuery();
 
             while(resultSet.next()) {
-                return UUID.fromString(resultSet.getString("Group"));
+                return UUID.fromString(resultSet.getString("GroupId"));
             }
 
             resultSet.close();
@@ -150,7 +150,7 @@ public class DatabasePlayers {
 
     public void setName(UUID uuid, String name) {
         try {
-            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("UPDATE " + table + " SET Name = ? WHERE UUID = ?");
+            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("UPDATE " + table + " SET PlayerName = ? WHERE UUID = ?");
             statement.setString(1, name);
             statement.setString(2, uuid.toString());
             statement.executeUpdate();
@@ -162,7 +162,7 @@ public class DatabasePlayers {
 
     public void setGroup(UUID uuid, UUID groupUniqueId) {
         try {
-            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("UPDATE " + table + " SET Group = ? WHERE UUID = ?");
+            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("UPDATE " + table + " SET GroupId = ? WHERE UUID = ?");
             statement.setString(1, groupUniqueId.toString());
             statement.setString(2, uuid.toString());
             statement.executeUpdate();

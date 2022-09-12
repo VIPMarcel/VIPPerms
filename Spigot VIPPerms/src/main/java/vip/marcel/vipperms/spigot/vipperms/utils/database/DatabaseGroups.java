@@ -43,13 +43,13 @@ public class DatabaseGroups {
 
     public boolean groupExists(String name) {
         try {
-            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("SELECT * FROM " + table + " WHERE Name = ?");
+            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("SELECT * FROM " + table + " WHERE GroupName = ?");
             statement.setString(1, name);
 
             final ResultSet resultSet = statement.executeQuery();
 
             while(resultSet.next()) {
-                return (resultSet.getString("Name") != null);
+                return (resultSet.getString("GroupName") != null);
             }
 
             resultSet.close();
@@ -70,7 +70,7 @@ public class DatabaseGroups {
         VIPPerms.getInstance().getLogger().log(Level.INFO, "Group 'default' automatically created.");
 
         try {
-            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("INSERT INTO " + table + "(UUID, Name, Prefix, Suffix, Color, Interhances, Permissions) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("INSERT INTO " + table + "(UUID, GroupName, Prefix, Suffix, Color, Interhances, Permissions) VALUES (?, ?, ?, ?, ?, ?, ?)");
             statement.setString(1, uniqueId.toString());
             statement.setString(2, "default");
             statement.setString(3, "");
@@ -110,7 +110,7 @@ public class DatabaseGroups {
         final UUID uniqueId = new UUID(System.currentTimeMillis(), 0);
 
         try {
-            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("INSERT INTO " + table + "(UUID, Name, Prefix, Suffix, Color, Interhances, Permissions) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("INSERT INTO " + table + "(UUID, GroupName, Prefix, Suffix, Color, Interhances, Permissions) VALUES (?, ?, ?, ?, ?, ?, ?)");
             statement.setString(1, uniqueId.toString());
             statement.setString(2, name);
             statement.setString(3, "");
@@ -128,7 +128,7 @@ public class DatabaseGroups {
 
     public UUID getUUID(String name) {
         try {
-            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("SELECT * FROM " + table + " WHERE Name = ?");
+            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("SELECT * FROM " + table + " WHERE GroupName = ?");
             statement.setString(1, name);
 
             final ResultSet resultSet = statement.executeQuery();
@@ -153,7 +153,7 @@ public class DatabaseGroups {
             final ResultSet resultSet = statement.executeQuery();
 
             while(resultSet.next()) {
-                return resultSet.getString("Name");
+                return resultSet.getString("GroupName");
             }
 
             resultSet.close();
@@ -287,7 +287,7 @@ public class DatabaseGroups {
 
     public void setName(UUID uuid, String name) {
         try {
-            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("UPDATE " + table + " SET Name = ? WHERE UUID = ?");
+            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("UPDATE " + table + " SET GroupName = ? WHERE UUID = ?");
             statement.setString(1, name);
             statement.setString(2, uuid.toString());
             statement.executeUpdate();

@@ -32,9 +32,6 @@ public class VIPPerms extends JavaPlugin {
 
     private MySQL mySQL;
 
-    private PermissionsGroupService permissionsGroupService;
-    private PermissionsGroupCache permissionsGroupCache;
-
     @Override
     public void onEnable() {
         instance = this;

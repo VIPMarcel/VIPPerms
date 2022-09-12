@@ -1,6 +1,6 @@
 name: VIPPerms
 version: '${project.version}'
 main: vip.marcel.vipperms.spigot.vipperms.VIPPerms
-api-version: 1.15
+api-version: 1.19
 authors: [ VIPMarcel ]
 description: full configurable spigot permission and group system

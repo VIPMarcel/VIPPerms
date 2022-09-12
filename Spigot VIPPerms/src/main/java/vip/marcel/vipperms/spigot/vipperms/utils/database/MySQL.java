@@ -1,5 +1,6 @@
 package vip.marcel.vipperms.spigot.vipperms.utils.database;
 
+import org.bukkit.Bukkit;
 import vip.marcel.vipperms.spigot.vipperms.VIPPerms;
 import vip.marcel.vipperms.spigot.vipperms.utils.config.DatabaseConfiguration;
 
@@ -33,9 +34,6 @@ public class MySQL {
         this.username = this.databaseConfiguration.getString("Database.MySQL.Username");
         this.password = this.databaseConfiguration.getString("Database.MySQL.Password");
         this.port = this.databaseConfiguration.getInteger("Database.MySQL.Port");
-
-        this.databaseGroups = new DatabaseGroups();
-        this.databasePlayers = new DatabasePlayers();
     }
 
     public void connect() {
@@ -46,20 +44,25 @@ public class MySQL {
             }
 
             {
-                PreparedStatement statement = this.connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + this.tables + "groups(id INT AUTO_INCREMENT PRIMARY KEY, UUID TEXT, Name TEXT, Prefix TEXT, Suffix TEXT, Color TEXT, Interhances TEXT, Permissions TEXT)");
+                final PreparedStatement statement = this.connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + this.tables + "groups (id INT AUTO_INCREMENT PRIMARY KEY, UUID TEXT, GroupName TEXT, Prefix TEXT, Suffix TEXT, Color TEXT, Interhances TEXT, Permissions TEXT)");
                 statement.executeUpdate();
                 statement.close();
             }
 
             {
-                PreparedStatement statement = this.connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + this.tables + "players(id INT AUTO_INCREMENT PRIMARY KEY, UUID TEXT, Name TEXT, Group TEXT, GroupExpires TEXT, Permissions TEXT)");
+                final PreparedStatement statement = this.connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + this.tables + "players (id INT AUTO_INCREMENT PRIMARY KEY, UUID TEXT, PlayerName TEXT, GroupId TEXT, GroupExpires TEXT, Permissions TEXT)");
                 statement.executeUpdate();
                 statement.close();
             }
 
         } catch(SQLException e) {
             e.printStackTrace();
+            VIPPerms.getInstance().getLogger().log(Level.INFO, "MySQL connection failed, plugin disabled!");
+            Bukkit.getPluginManager().disablePlugin(VIPPerms.getInstance());
         }
+
+        this.databaseGroups = new DatabaseGroups();
+        this.databasePlayers = new DatabasePlayers();
 
         this.databaseGroups.createDefaultGroup();
     }

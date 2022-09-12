@@ -26,8 +26,9 @@ public class SettingsConfiguration implements ConfigHandler {
         if(!this.file.exists()) {
             try {
                 this.file.createNewFile();
+                this.configuration.set("Player.Update-Displayname", true);
                 this.configuration.set("Chat.Enable", true);
-                this.configuration.set("Chat.Format", "{prefix} {color} {player} {suffix} &8» &r{message}");
+                this.configuration.set("Chat.Format", "{prefix}{color}{player}{suffix} &8» &r{message}");
                 this.configuration.set("Tab.Enable", true);
                 this.configuration.set("Tab.Ranking", List.of("default"));
                 this.configuration.save(this.file);

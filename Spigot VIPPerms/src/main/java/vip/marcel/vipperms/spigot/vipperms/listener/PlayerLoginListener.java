@@ -13,6 +13,7 @@ import vip.marcel.vipperms.spigot.vipperms.api.PermissionsGroup;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class PlayerLoginListener implements Listener {
 
@@ -26,6 +27,14 @@ public class PlayerLoginListener implements Listener {
         final PermissionAttachment permissionAttachment = player.addAttachment(VIPPerms.getInstance());
 
         player.setOp(false);
+
+        CompletableFuture.runAsync(() -> {
+            if(!VIPPerms.getInstance().getMySQL().getDatabasePlayers().playerExists(player.getUniqueId())) {
+                VIPPerms.getInstance().getMySQL().getDatabasePlayers().createPlayer(player.getUniqueId(), player.getName());
+            } else {
+                VIPPerms.getInstance().getMySQL().getDatabasePlayers().setName(player.getUniqueId(), player.getName());
+            }
+        });
 
         VIPPerms.getInstance().getPermissionsPlayer(player.getUniqueId(), permissionsPlayer -> {
             final List<PermissionsGroup> permissionInterhances = Lists.newArrayList();
@@ -44,6 +53,10 @@ public class PlayerLoginListener implements Listener {
             });
 
             calcuatePermissions(permissionAttachment, permissionsPlayer.getPermissions());
+
+            if(VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Player.Update-Displayname")) {
+                player.setDisplayName(playerGroup.getColor() + player.getName());
+            }
 
         }, true);
 
