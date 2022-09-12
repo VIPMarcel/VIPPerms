@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Proxy VIPPerms/Proxy VIPPerms.iml" filepath="$PROJECT_DIR$/Proxy VIPPerms/Proxy VIPPerms.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Spigot VIPPerms/Spigot VIPPerms.iml" filepath="$PROJECT_DIR$/Spigot VIPPerms/Spigot VIPPerms.iml" />
+    </modules>
+  </component>
+</project>
