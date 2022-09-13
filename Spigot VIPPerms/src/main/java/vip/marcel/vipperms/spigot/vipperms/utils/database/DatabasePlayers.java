@@ -54,6 +54,25 @@ public class DatabasePlayers {
         }
     }
 
+    public UUID getUUID(String name) {
+        try {
+            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("SELECT * FROM " + table + " WHERE PlayerName = ?");
+            statement.setString(1, name);
+
+            final ResultSet resultSet = statement.executeQuery();
+
+            while(resultSet.next()) {
+                return UUID.fromString(resultSet.getString("UUID"));
+            }
+
+            resultSet.close();
+            statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public String getName(UUID uuid) {
         try {
             final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("SELECT * FROM " + table + " WHERE UUID = ?");

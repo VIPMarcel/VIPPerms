@@ -29,8 +29,6 @@ public class SettingsConfiguration implements ConfigHandler {
                 this.configuration.set("Player.Update-Displayname", true);
                 this.configuration.set("Chat.Enable", true);
                 this.configuration.set("Chat.Format", "{prefix}{color}{player}{suffix} &8» &r{message}");
-                this.configuration.set("Tab.Enable", true);
-                this.configuration.set("Tab.Ranking", List.of("default"));
                 this.configuration.save(this.file);
             } catch (IOException e) {
                 e.printStackTrace();
