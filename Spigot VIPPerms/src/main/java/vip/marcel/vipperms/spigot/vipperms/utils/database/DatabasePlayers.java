@@ -1,6 +1,5 @@
 package vip.marcel.vipperms.spigot.vipperms.utils.database;
 
-import com.google.common.collect.Maps;
 import vip.marcel.vipperms.spigot.vipperms.VIPPerms;
 
 import java.sql.PreparedStatement;
@@ -113,6 +112,8 @@ public class DatabasePlayers {
     }
 
     public Map<String, Long> getPermissions(UUID uuid) {
+        final Map<String, Long> permissionsMap = new HashMap<>();
+
         try {
             final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("SELECT * FROM " + table + " WHERE UUID = ?");
             statement.setString(1, uuid.toString());
@@ -124,20 +125,20 @@ public class DatabasePlayers {
                 String[] splittet = permissions.split(";");
 
                 final List<String> permissionsList = new ArrayList<>();
-                final Map<String, Long> permissionsMap = new HashMap<>();
 
                 for(int i = 0; i < splittet.length; i++) {
                     permissionsList.add(splittet[i].replaceAll(";", ""));
                 }
 
-                for(String permission : permissionsList) {
-                    String permissionName = permission.split(":")[0];
-                    long timeStamp = Long.parseLong(permission.split(":")[1]);
+                try {
+                    for(String permission : permissionsList) {
+                        String permissionName = permission.split(":")[0];
+                        long timeStamp = Long.parseLong(permission.split(":")[1]);
 
-                    permissionsMap.put(permissionName, timeStamp);
-                }
+                        permissionsMap.put(permissionName, timeStamp);
+                    }
+                } catch (ArrayIndexOutOfBoundsException ignore) {}
 
-                return permissionsMap;
             }
 
             resultSet.close();
@@ -145,7 +146,7 @@ public class DatabasePlayers {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return Maps.newHashMap();
+        return permissionsMap;
     }
 
     public void setName(UUID uuid, String name) {

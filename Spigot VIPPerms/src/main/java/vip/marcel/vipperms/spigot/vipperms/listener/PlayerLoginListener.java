@@ -1,17 +1,14 @@
 package vip.marcel.vipperms.spigot.vipperms.listener;
 
-import com.google.common.collect.Lists;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.permissions.PermissionAttachment;
 import vip.marcel.vipperms.spigot.vipperms.VIPPerms;
-import vip.marcel.vipperms.spigot.vipperms.api.PermissionsGroup;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -22,14 +19,13 @@ public class PlayerLoginListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerLoginEvent(PlayerJoinEvent event) {
+    public void onPlayerLoginEvent(PlayerLoginEvent event) {
         final Player player = event.getPlayer();
-        final PermissionAttachment permissionAttachment = player.addAttachment(VIPPerms.getInstance());
 
         player.setOp(false);
         VIPPerms.getInstance().resetPlayerPermissions(player);
 
-        CompletableFuture.runAsync(() -> {
+        CompletableFuture.supplyAsync(() -> {
 
             if(!VIPPerms.getInstance().getMySQL().getDatabasePlayers().playerExists(player.getUniqueId())) {
                 VIPPerms.getInstance().getMySQL().getDatabasePlayers().createPlayer(player.getUniqueId(), player.getName());
@@ -37,31 +33,12 @@ public class PlayerLoginListener implements Listener {
                 VIPPerms.getInstance().getMySQL().getDatabasePlayers().setName(player.getUniqueId(), player.getName());
             }
 
-            VIPPerms.getInstance().getPermissionsPlayer(player.getUniqueId(), permissionsPlayer -> {
-                final List<PermissionsGroup> permissionInterhances = Lists.newArrayList();
-
-                final PermissionsGroup playerGroup = VIPPerms.getInstance().getPermissionsGroup(permissionsPlayer.getGroupId());
-
-                permissionInterhances.add(playerGroup);
-
-                playerGroup.getInterhances().forEach(groupIds -> {
-                    permissionInterhances.add(VIPPerms.getInstance().getPermissionsGroup(groupIds));
-                });
-
-                permissionInterhances.forEach(interhances -> {
-                    calculatePermissions(permissionAttachment, interhances.getPermissions());
-                });
-
-                calculatePermissions(permissionAttachment, permissionsPlayer.getPermissions());
-
-                if(VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Player.Update-Displayname")) {
-                    player.setDisplayName(playerGroup.getColor() + player.getName());
-                }
-
-            }, true);
-
-        }).thenAccept(unused -> {
-            player.recalculatePermissions();
+            VIPPerms.getInstance().setPlayerPermissions(player, true);
+            return true;
+        }).thenAccept(finished -> {
+            if(finished) {
+                player.recalculatePermissions();
+            }
         });
 
     }

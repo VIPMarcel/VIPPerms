@@ -67,10 +67,6 @@ public class VIPPerms extends JavaPlugin {
 
         this.mySQL = new MySQL();
         this.mySQL.connect();
-
-        Map<String, Long> testMap = Maps.newHashMap();
-        testMap.put("vipperms.*", (long) -1);
-        this.mySQL.getDatabaseGroups().setPermissions(UUID.fromString("00000183-31c6-bb2a-0000-000000000000"), testMap);
     }
 
     private void loadGroupsCache() {
@@ -142,6 +138,73 @@ public class VIPPerms extends JavaPlugin {
         }
 
         player.recalculatePermissions();
+    }
+
+    public boolean setPlayerPermissions(Player player, boolean database) {
+        final PermissionAttachment permissionAttachment = player.addAttachment(this);
+
+        if(database) {
+            getPermissionsPlayer(player.getUniqueId(), permissionsPlayer -> {
+                final Map<String, Long> playerPermissions = permissionsPlayer.getPermissions();
+
+                for(String permission : playerPermissions.keySet()) {
+                    if(playerPermissions.get(permission) >= System.currentTimeMillis() | playerPermissions.get(permission) == -1) {
+                        permissionAttachment.setPermission(permission, true);
+                    }
+                }
+
+                final PermissionsGroup playerGroup = getPermissionsGroup(permissionsPlayer.getGroupId());
+
+                for(String permission : playerGroup.getPermissions().keySet()) {
+                    if(playerGroup.getPermissions().get(permission) >= System.currentTimeMillis() | playerGroup.getPermissions().get(permission) == -1) {
+                        permissionAttachment.setPermission(permission, true);
+                    }
+                }
+
+                for(UUID interhance : playerGroup.getInterhances()) {
+                    final PermissionsGroup interhaceGroup = getPermissionsGroup(interhance);
+
+                    for(String permission : interhaceGroup.getPermissions().keySet()) {
+                        if(interhaceGroup.getPermissions().get(permission) >= System.currentTimeMillis() | interhaceGroup.getPermissions().get(permission) == -1) {
+                            permissionAttachment.setPermission(permission, true);
+                        }
+                    }
+
+                }
+            }, true);
+        } else {
+            final PermissionsPlayer permissionsPlayer = getPermissionsPlayer(player.getUniqueId());
+
+            final Map<String, Long> playerPermissions = permissionsPlayer.getPermissions();
+
+            for(String permission : playerPermissions.keySet()) {
+                if(playerPermissions.get(permission) >= System.currentTimeMillis() | playerPermissions.get(permission) == -1) {
+                    permissionAttachment.setPermission(permission, true);
+                }
+            }
+
+            final PermissionsGroup playerGroup = getPermissionsGroup(permissionsPlayer.getGroupId());
+
+            for(String permission : playerGroup.getPermissions().keySet()) {
+                if(playerGroup.getPermissions().get(permission) >= System.currentTimeMillis() | playerGroup.getPermissions().get(permission) == -1) {
+                    permissionAttachment.setPermission(permission, true);
+                }
+            }
+
+            for(UUID interhance : playerGroup.getInterhances()) {
+                final PermissionsGroup interhaceGroup = getPermissionsGroup(interhance);
+
+                for(String permission : interhaceGroup.getPermissions().keySet()) {
+                    if(interhaceGroup.getPermissions().get(permission) >= System.currentTimeMillis() | interhaceGroup.getPermissions().get(permission) == -1) {
+                        permissionAttachment.setPermission(permission, true);
+                    }
+                }
+
+            }
+
+        }
+
+        return true;
     }
 
     public String getPrefix() {
