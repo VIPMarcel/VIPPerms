@@ -76,7 +76,7 @@ public class DatabaseGroups {
             statement.setString(4, "");
             statement.setString(5, "");
             statement.setString(6, "");
-            statement.setString(7, "");
+            statement.setString(7, "group.default:-1");
 
             statement.executeUpdate();
             statement.close();
@@ -116,7 +116,7 @@ public class DatabaseGroups {
             statement.setString(4, "");
             statement.setString(5, "");
             statement.setString(6, "");
-            statement.setString(7, "");
+            statement.setString(7, "group." + name + ":-1");
 
             statement.executeUpdate();
             statement.close();

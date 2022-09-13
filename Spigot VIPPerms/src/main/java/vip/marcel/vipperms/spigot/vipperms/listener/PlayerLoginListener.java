@@ -6,10 +6,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.permissions.PermissionAttachment;
 import vip.marcel.vipperms.spigot.vipperms.VIPPerms;
 
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class PlayerLoginListener implements Listener {
@@ -41,18 +39,6 @@ public class PlayerLoginListener implements Listener {
             }
         });
 
-    }
-
-    private void calculatePermissions(PermissionAttachment permissionAttachment, Map<String, Long> permissions) {
-        Bukkit.broadcastMessage("heyyy");
-        for(String permission : permissions.keySet()) {
-            if(permissions.get(permission) >= System.currentTimeMillis() | permissions.get(permission) == -1) {
-                Bukkit.getScheduler().runTask(VIPPerms.getInstance(), () -> {
-                    permissionAttachment.setPermission(permission, true);
-                    Bukkit.broadcastMessage("added: " + permission + " for " + permissions.get(permission));
-                });
-            }
-        }
     }
 
 }
