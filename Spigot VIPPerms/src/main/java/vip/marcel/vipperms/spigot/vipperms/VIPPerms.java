@@ -1,9 +1,13 @@
 package vip.marcel.vipperms.spigot.vipperms;
 
 import com.google.common.collect.Maps;
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachment;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.java.JavaPlugin;
 import vip.marcel.vipperms.spigot.vipperms.api.PermissionsGroup;
 import vip.marcel.vipperms.spigot.vipperms.api.PermissionsPlayer;
+import vip.marcel.vipperms.spigot.vipperms.commands.VIPPermsCommand;
 import vip.marcel.vipperms.spigot.vipperms.listener.AsyncPlayerChatListener;
 import vip.marcel.vipperms.spigot.vipperms.listener.PlayerLoginListener;
 import vip.marcel.vipperms.spigot.vipperms.plugin.groups.PermissionsGroupCache;
@@ -13,6 +17,7 @@ import vip.marcel.vipperms.spigot.vipperms.plugin.players.PermissionsPlayerServi
 import vip.marcel.vipperms.spigot.vipperms.utils.config.SettingsConfiguration;
 import vip.marcel.vipperms.spigot.vipperms.utils.database.MySQL;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -62,6 +67,10 @@ public class VIPPerms extends JavaPlugin {
 
         this.mySQL = new MySQL();
         this.mySQL.connect();
+
+        Map<String, Long> testMap = Maps.newHashMap();
+        testMap.put("vipperms.*", (long) -1);
+        this.mySQL.getDatabaseGroups().setPermissions(UUID.fromString("00000183-31c6-bb2a-0000-000000000000"), testMap);
     }
 
     private void loadGroupsCache() {
@@ -75,6 +84,8 @@ public class VIPPerms extends JavaPlugin {
     private void registerListeners() {
         new PlayerLoginListener();
         new AsyncPlayerChatListener();
+
+        new VIPPermsCommand();
     }
 
     public PermissionsGroup getPermissionsGroup(UUID uuid) {
@@ -115,6 +126,22 @@ public class VIPPerms extends JavaPlugin {
 
     public PermissionsPlayer getPermissionsPlayer(String name) {
         return new PermissionsPlayerCache(name, this.permissionsPlayers);
+    }
+
+    public void resetPlayerPermissions(Player player) {
+
+        for(Iterator<PermissionAttachmentInfo> iterator = player.getEffectivePermissions().iterator(); iterator.hasNext(); ) {
+            PermissionAttachmentInfo info = iterator.next();
+
+            if(info.getAttachment() != null) {
+                PermissionAttachment permission = info.getAttachment();
+                permission.unsetPermission(info.getPermission());
+                permission.setPermission(info.getPermission(), false);
+            }
+
+        }
+
+        player.recalculatePermissions();
     }
 
     public String getPrefix() {

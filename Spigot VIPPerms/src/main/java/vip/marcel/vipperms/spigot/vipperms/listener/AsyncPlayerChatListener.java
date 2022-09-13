@@ -30,7 +30,7 @@ public class AsyncPlayerChatListener implements Listener {
             format = format.replace("{color}", permissionsGroup.getColor());
             format = format.replace("{suffix}", permissionsGroup.getSuffix());
             format = format.replace("{player}", player.getName());
-            format = format.replace("{message}", event.getMessage());
+            format = format.replace("{message}", event.getMessage().replaceAll("%", "%%"));
 
             event.setFormat(format);
 

@@ -4,3 +4,14 @@ main: vip.marcel.vipperms.spigot.vipperms.VIPPerms
 api-version: 1.19
 authors: [ VIPMarcel ]
 description: full configurable spigot permission and group system
+
+permissions:
+  vipperms.*:
+    description: use the /vp command
+    default: false
+
+commands:
+  vipperms:
+    description: manage all players and groups
+    aliases:
+      - vp
