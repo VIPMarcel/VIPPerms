@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.permissions.PermissionAttachment;
 import vip.marcel.vipperms.spigot.vipperms.VIPPerms;
 import vip.marcel.vipperms.spigot.vipperms.api.PermissionsGroup;
@@ -22,7 +22,7 @@ public class PlayerLoginListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerLoginEvent(PlayerLoginEvent event) {
+    public void onPlayerLoginEvent(PlayerJoinEvent event) {
         final Player player = event.getPlayer();
         final PermissionAttachment permissionAttachment = player.addAttachment(VIPPerms.getInstance());
 
@@ -67,6 +67,7 @@ public class PlayerLoginListener implements Listener {
     }
 
     private void calculatePermissions(PermissionAttachment permissionAttachment, Map<String, Long> permissions) {
+        Bukkit.broadcastMessage("heyyy");
         for(String permission : permissions.keySet()) {
             if(permissions.get(permission) >= System.currentTimeMillis() | permissions.get(permission) == -1) {
                 Bukkit.getScheduler().runTask(VIPPerms.getInstance(), () -> {
