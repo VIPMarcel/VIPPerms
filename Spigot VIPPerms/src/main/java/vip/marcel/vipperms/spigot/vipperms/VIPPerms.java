@@ -7,6 +7,8 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.java.JavaPlugin;
 import vip.marcel.vipperms.spigot.vipperms.api.PermissionsGroup;
 import vip.marcel.vipperms.spigot.vipperms.api.PermissionsPlayer;
+import vip.marcel.vipperms.spigot.vipperms.api.values.GroupValue;
+import vip.marcel.vipperms.spigot.vipperms.api.values.PlayerValue;
 import vip.marcel.vipperms.spigot.vipperms.commands.VIPPermsCommand;
 import vip.marcel.vipperms.spigot.vipperms.listener.AsyncPlayerChatListener;
 import vip.marcel.vipperms.spigot.vipperms.listener.PlayerLoginListener;
@@ -18,6 +20,7 @@ import vip.marcel.vipperms.spigot.vipperms.utils.config.SettingsConfiguration;
 import vip.marcel.vipperms.spigot.vipperms.utils.database.MySQL;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -124,6 +127,46 @@ public class VIPPerms extends JavaPlugin {
         return new PermissionsPlayerCache(name, this.permissionsPlayers);
     }
 
+    public void updatePermissionsGroup(UUID uuid, GroupValue values, Object value) {
+        final PermissionsGroup permissionsGroup = getPermissionsGroup(uuid);
+
+        if(permissionsGroup == null) {
+            getLogger().log(Level.WARNING, "Group with uniqueId '" + uuid.toString() + "' not found and updated.");
+            return;
+        }
+
+        switch(values) {
+            case NAME -> this.mySQL.getDatabaseGroups().setName(uuid, value.toString());
+            case PREFIX -> this.mySQL.getDatabaseGroups().setPrefix(uuid, value.toString());
+            case SUFFIX -> this.mySQL.getDatabaseGroups().setSuffix(uuid, value.toString());
+            case COLOR -> this.mySQL.getDatabaseGroups().setColor(uuid, value.toString());
+            case INTERHANCES -> this.mySQL.getDatabaseGroups().setInterhances(uuid, (List<UUID>) value);
+            case PERMISSIONS -> this.mySQL.getDatabaseGroups().setPermissions(uuid, (Map<String, Long>) value);
+            default -> getLogger().log(Level.WARNING, "Group with uniqueId '" + uuid.toString() + "' tried to update unknown GroupValue.");
+        }
+
+        loadGroupsCache();
+    }
+
+    public void updatePermissionsPlayer(UUID uuid, PlayerValue values, Object value) {
+        final PermissionsPlayer permissionsPlayer = getPermissionsPlayer(uuid);
+
+        if(permissionsPlayer == null) {
+            getLogger().log(Level.WARNING, "Player with uniqueId '" + uuid.toString() + "' not found and updated.");
+            return;
+        }
+
+        switch(values) {
+            case NAME -> this.mySQL.getDatabasePlayers().setName(uuid, value.toString());
+            case GROUPID -> this.mySQL.getDatabasePlayers().setGroup(uuid, (UUID) value);
+            case GROUP_EXPIRES -> this.mySQL.getDatabasePlayers().setGroupExpires(uuid, (long) value);
+            case PERMISSIONS -> this.mySQL.getDatabasePlayers().setPermissions(uuid, (Map<String, Long>) value);
+            default -> getLogger().log(Level.WARNING, "Player with uniqueId '" + uuid.toString() + "' tried to update unknown PlayerValue.");
+        }
+
+        getPermissionsPlayer(uuid, unused -> {}, true);
+    }
+
     public void resetPlayerPermissions(Player player) {
 
         for(Iterator<PermissionAttachmentInfo> iterator = player.getEffectivePermissions().iterator(); iterator.hasNext(); ) {
@@ -150,6 +193,8 @@ public class VIPPerms extends JavaPlugin {
                 for(String permission : playerPermissions.keySet()) {
                     if(playerPermissions.get(permission) >= System.currentTimeMillis() | playerPermissions.get(permission) == -1) {
                         permissionAttachment.setPermission(permission, true);
+                    } else {
+                        playerPermissions.remove(permission);
                     }
                 }
 
@@ -158,6 +203,8 @@ public class VIPPerms extends JavaPlugin {
                 for(String permission : playerGroup.getPermissions().keySet()) {
                     if(playerGroup.getPermissions().get(permission) >= System.currentTimeMillis() | playerGroup.getPermissions().get(permission) == -1) {
                         permissionAttachment.setPermission(permission, true);
+                    } else {
+                        playerGroup.getPermissions().remove(permission);
                     }
                 }
 
@@ -167,6 +214,8 @@ public class VIPPerms extends JavaPlugin {
                     for(String permission : interhaceGroup.getPermissions().keySet()) {
                         if(interhaceGroup.getPermissions().get(permission) >= System.currentTimeMillis() | interhaceGroup.getPermissions().get(permission) == -1) {
                             permissionAttachment.setPermission(permission, true);
+                        } else {
+                            interhaceGroup.getPermissions().remove(permission);
                         }
                     }
 
