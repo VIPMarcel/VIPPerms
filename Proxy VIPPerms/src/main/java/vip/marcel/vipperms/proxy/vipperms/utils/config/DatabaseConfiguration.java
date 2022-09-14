@@ -3,6 +3,7 @@ package vip.marcel.vipperms.proxy.vipperms.utils.config;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
+import vip.marcel.vipperms.proxy.vipperms.VIPPerms;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,18 +11,12 @@ import java.util.List;
 
 public class DatabaseConfiguration implements ConfigHandler {
 
-    private final File folder = new File("plugins/VIPPerms");
-    private final File file = new File(this.folder, "database.yml");
+    private final File folder = new File(VIPPerms.getInstance().getDataFolder().getPath());
+    private final File file = new File(this.folder, "/database.yml");
 
     private Configuration configuration;
 
     public DatabaseConfiguration() {
-        try {
-            configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         this.createConfigurationFiles();
     }
 
@@ -34,6 +29,9 @@ public class DatabaseConfiguration implements ConfigHandler {
         if(!this.file.exists()) {
             try {
                 this.file.createNewFile();
+
+                configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
+
                 this.configuration.set("Database.MySQL.Hostname", "localhost");
                 this.configuration.set("Database.MySQL.Port", 3306);
                 this.configuration.set("Database.MySQL.Database", "vipperms");
@@ -44,6 +42,12 @@ public class DatabaseConfiguration implements ConfigHandler {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        try {
+            configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }

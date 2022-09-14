@@ -19,7 +19,7 @@ public class VIPPermsCommand extends Command {
 
     public VIPPermsCommand(String name, String permission, String... aliases) {
         super(name, permission, aliases);
-        this.setPermissionMessage(VIPPerms.getInstance().getNoPermissions());
+        this.setPermissionMessage(VIPPerms.getInstance().getPrefix() + VIPPerms.getInstance().getNoPermissions());
     }
 
     @Override

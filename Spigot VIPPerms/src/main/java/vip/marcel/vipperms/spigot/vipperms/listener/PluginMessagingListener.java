@@ -39,7 +39,16 @@ public class PluginMessagingListener implements PluginMessageListener {
 
             if(target != null) {
                 VIPPerms.getInstance().resetPlayerPermissions(target);
+                target.setOp(false);
                 VIPPerms.getInstance().setPlayerPermissions(target, true);
+
+                Bukkit.getScheduler().runTaskLater(VIPPerms.getInstance(), () -> {
+                    Bukkit.getPlayer(uuid).recalculatePermissions();
+
+                    if(player.hasPermission("vipperms.autoop")) {
+                        player.setOp(true);
+                    }
+                }, 20);
 
                 Bukkit.getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, null, true));
             }

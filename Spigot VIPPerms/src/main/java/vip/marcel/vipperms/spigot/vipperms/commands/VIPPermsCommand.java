@@ -122,6 +122,13 @@ public class VIPPermsCommand implements CommandExecutor {
                         if(Bukkit.getPlayer(uuid) != null) {
                             VIPPerms.getInstance().resetPlayerPermissions(Bukkit.getPlayer(uuid));
                             VIPPerms.getInstance().setPlayerPermissions(Bukkit.getPlayer(uuid), true);
+                            Bukkit.getScheduler().runTaskLater(VIPPerms.getInstance(), () -> {
+                                Bukkit.getPlayer(uuid).recalculatePermissions();
+
+                                if(Bukkit.getPlayer(uuid).hasPermission("vipperms.autoop")) {
+                                    Bukkit.getPlayer(uuid).setOp(true);
+                                }
+                            }, 20);
                         }
                         Bukkit.getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), true));
                     }
@@ -156,6 +163,13 @@ public class VIPPermsCommand implements CommandExecutor {
                         if(Bukkit.getPlayer(uuid) != null) {
                             VIPPerms.getInstance().resetPlayerPermissions(Bukkit.getPlayer(uuid));
                             VIPPerms.getInstance().setPlayerPermissions(Bukkit.getPlayer(uuid), true);
+                            Bukkit.getScheduler().runTaskLater(VIPPerms.getInstance(), () -> {
+                                Bukkit.getPlayer(uuid).recalculatePermissions();
+
+                                if(Bukkit.getPlayer(uuid).hasPermission("vipperms.autoop")) {
+                                    Bukkit.getPlayer(uuid).setOp(true);
+                                }
+                            }, 20);
                         }
                         Bukkit.getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), true));
                     }

@@ -1,5 +1,6 @@
 package vip.marcel.vipperms.proxy.vipperms;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -19,9 +20,7 @@ import vip.marcel.vipperms.proxy.vipperms.utils.config.SettingsConfiguration;
 import vip.marcel.vipperms.proxy.vipperms.utils.database.MySQL;
 import vip.marcel.vipperms.proxy.vipperms.utils.helper.GroupExpiresTimeHelper;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -93,6 +92,14 @@ public final class VIPPerms extends Plugin {
             this.permissionsGroups.put(uuid, permissionsGroup);
             getLogger().log(Level.INFO, "Group '" + permissionsGroup.getName() + "' loaded into cache.");
         }
+    }
+
+    public List<PermissionsGroup> getPermissionsGroups() {
+        final List<PermissionsGroup> output = Lists.newArrayList();
+
+        output.addAll(this.permissionsGroups.values());
+
+        return output;
     }
 
     public PermissionsGroup getPermissionsGroup(UUID uuid) {
@@ -177,9 +184,9 @@ public final class VIPPerms extends Plugin {
 
     public void resetPlayerPermissions(ProxiedPlayer player) {
 
-        player.getPermissions().forEach(permission -> {
-            player.setPermission(permission, false);
-        });
+        for(Iterator<String> iterator = new ArrayList<>(player.getPermissions()).iterator(); iterator.hasNext(); ) {
+            player.setPermission(iterator.next(), false);
+        }
 
     }
 
