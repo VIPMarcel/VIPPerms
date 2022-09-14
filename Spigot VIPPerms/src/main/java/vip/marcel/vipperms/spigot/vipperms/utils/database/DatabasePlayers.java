@@ -54,6 +54,19 @@ public class DatabasePlayers {
         }
     }
 
+    public void deletePlayer(UUID uuid) {
+        if(playerExists(uuid)) {
+            try {
+                PreparedStatement statement = this.mySQL.getConnection().prepareStatement("DELETE FROM " + table + " WHERE UUID = ?");
+                statement.setString(1, uuid.toString());
+                statement.executeUpdate();
+                statement.close();
+            } catch(SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public UUID getUUID(String name) {
         try {
             final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("SELECT * FROM " + table + " WHERE PlayerName = ?");

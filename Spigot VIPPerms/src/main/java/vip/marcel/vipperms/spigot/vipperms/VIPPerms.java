@@ -18,6 +18,7 @@ import vip.marcel.vipperms.spigot.vipperms.plugin.players.PermissionsPlayerCache
 import vip.marcel.vipperms.spigot.vipperms.plugin.players.PermissionsPlayerService;
 import vip.marcel.vipperms.spigot.vipperms.utils.config.SettingsConfiguration;
 import vip.marcel.vipperms.spigot.vipperms.utils.database.MySQL;
+import vip.marcel.vipperms.spigot.vipperms.utils.helper.GroupExpiresTimeHelper;
 
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +38,8 @@ public class VIPPerms extends JavaPlugin {
     private Map<UUID, PermissionsPlayer> permissionsPlayers;
 
     private SettingsConfiguration settingsConfiguration;
+
+    private GroupExpiresTimeHelper groupExpiresTimeHelper;
 
     private MySQL mySQL;
 
@@ -68,11 +71,15 @@ public class VIPPerms extends JavaPlugin {
 
         this.settingsConfiguration = new SettingsConfiguration();
 
+        this.groupExpiresTimeHelper = new GroupExpiresTimeHelper();
+
         this.mySQL = new MySQL();
         this.mySQL.connect();
     }
 
     private void loadGroupsCache() {
+        this.permissionsGroups.clear();
+
         for(UUID uuid : this.mySQL.getAllPermissionsGroups()) {
             final PermissionsGroup permissionsGroup = new PermissionsGroupService(uuid);
             this.permissionsGroups.put(uuid, permissionsGroup);
@@ -270,6 +277,10 @@ public class VIPPerms extends JavaPlugin {
 
     public SettingsConfiguration getSettingsConfiguration() {
         return this.settingsConfiguration;
+    }
+
+    public GroupExpiresTimeHelper getGroupExpiresTimeHelper() {
+        return this.groupExpiresTimeHelper;
     }
 
     public MySQL getMySQL() {
