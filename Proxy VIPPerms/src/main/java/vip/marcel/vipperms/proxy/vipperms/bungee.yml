@@ -1,0 +1,4 @@
+name: VIPPerms
+version: '${project.version}'
+main: vip.marcel.vipperms.proxy.vipperms.VIPPerms
+description: full configurable proxy permission and group system
