@@ -52,10 +52,11 @@ public class VIPPerms extends JavaPlugin {
         this.loadGroupsCache();
         this.registerListeners();
 
+        final PluginMessagingListener pluginMessagingListener = new PluginMessagingListener();
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "vipperms:reloadgroups");
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "vipperms:reloadplayer");
-        this.getServer().getMessenger().registerIncomingPluginChannel(this, "vipperms:reloadgroups", new PluginMessagingListener());
-        this.getServer().getMessenger().registerIncomingPluginChannel(this, "vipperms:reloadplayer", new PluginMessagingListener());
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, "vipperms:reloadgroups", pluginMessagingListener);
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, "vipperms:reloadplayer", pluginMessagingListener);
     }
 
     @Override
