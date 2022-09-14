@@ -45,7 +45,9 @@ public class PlayerLoginListener implements Listener {
             return true;
         }).thenAccept(finished -> {
             if(finished) {
-                player.recalculatePermissions();
+                Bukkit.getScheduler().runTaskLater(VIPPerms.getInstance(), () -> {
+                    player.recalculatePermissions();
+                }, 20);
             }
         });
 
@@ -53,7 +55,7 @@ public class PlayerLoginListener implements Listener {
             if(player.hasPermission("vipperms.autoop")) {
                 player.setOp(true);
             }
-        }, 20);
+        }, 25);
 
     }
 
