@@ -12,6 +12,7 @@ import vip.marcel.vipperms.spigot.vipperms.api.values.PlayerValue;
 import vip.marcel.vipperms.spigot.vipperms.commands.VIPPermsCommand;
 import vip.marcel.vipperms.spigot.vipperms.listener.AsyncPlayerChatListener;
 import vip.marcel.vipperms.spigot.vipperms.listener.PlayerLoginListener;
+import vip.marcel.vipperms.spigot.vipperms.listener.PluginMessagingListener;
 import vip.marcel.vipperms.spigot.vipperms.plugin.groups.PermissionsGroupCache;
 import vip.marcel.vipperms.spigot.vipperms.plugin.groups.PermissionsGroupService;
 import vip.marcel.vipperms.spigot.vipperms.plugin.players.PermissionsPlayerCache;
@@ -50,6 +51,11 @@ public class VIPPerms extends JavaPlugin {
         this.init();
         this.loadGroupsCache();
         this.registerListeners();
+
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "vipperms:reloadgroups");
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "vipperms:reloadplayer");
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, "vipperms:reloadgroups", new PluginMessagingListener());
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, "vipperms:reloadplayer", new PluginMessagingListener());
     }
 
     @Override

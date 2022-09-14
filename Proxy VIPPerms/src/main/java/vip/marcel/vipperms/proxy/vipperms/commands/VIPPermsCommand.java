@@ -1,39 +1,38 @@
-package vip.marcel.vipperms.spigot.vipperms.commands;
+package vip.marcel.vipperms.proxy.vipperms.commands;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import vip.marcel.vipperms.spigot.vipperms.VIPPerms;
-import vip.marcel.vipperms.spigot.vipperms.api.values.PlayerValue;
-import vip.marcel.vipperms.spigot.vipperms.events.PlayerGroupChangeEvent;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.plugin.Command;
+import vip.marcel.vipperms.proxy.vipperms.VIPPerms;
+import vip.marcel.vipperms.proxy.vipperms.api.values.PlayerValue;
+import vip.marcel.vipperms.proxy.vipperms.events.PlayerGroupChangeEvent;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-public class VIPPermsCommand implements CommandExecutor {
+public class VIPPermsCommand extends Command {
 
-    public VIPPermsCommand() {
-        VIPPerms.getInstance().getCommand("vipperms").setExecutor(this);
+    public VIPPermsCommand(String name, String permission, String... aliases) {
+        super(name, permission, aliases);
+        this.setPermissionMessage(VIPPerms.getInstance().getNoPermissions());
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] arguments) {
+    public void execute(CommandSender sender, String[] arguments) {
 
-        if(!sender.hasPermission("vipperms.*") && sender instanceof Player) {
+        if(!sender.hasPermission("vipperms.*") && sender instanceof ProxiedPlayer) {
             sender.sendMessage(VIPPerms.getInstance().getPrefix() + VIPPerms.getInstance().getNoPermissions());
-            return true;
+            return;
         }
 
         if(arguments.length == 0) {
             sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Benutze §e/vp help §7für Hilfe.");
-            return true;
+            return;
         }
 
         /*
@@ -58,13 +57,13 @@ public class VIPPermsCommand implements CommandExecutor {
 
             if(arguments.length == 1) {
                 sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Gebe einen §eGruppennamen §7an, um sie zu erstellen.");
-                return true;
+                return;
             }
             final String groupName = arguments[1].toLowerCase();
 
             if(VIPPerms.getInstance().getMySQL().getDatabaseGroups().groupExists(groupName)) {
                 sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Die Gruppe §e" + groupName + " §7ist bereits registriert.");
-                return true;
+                return;
             }
 
             VIPPerms.getInstance().getMySQL().getDatabaseGroups().createGroup(groupName);
@@ -74,25 +73,25 @@ public class VIPPermsCommand implements CommandExecutor {
 
             if(arguments.length == 1) {
                 sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Gebe einen §eSpielernamen §7an, um eine Gruppe zu setzen.");
-                return true;
+                return;
             }
             final String playerName = arguments[1];
             final UUID uuid = VIPPerms.getInstance().getMySQL().getDatabasePlayers().getUUID(playerName);
 
             if(uuid == null) {
                 sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Der Spieler §e" + playerName + " §7ist nicht registriert.");
-                return true;
+                return;
             }
 
             if(arguments.length == 2) {
                 sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Du musst einen §eGruppennamen §7angeben und ggf. eine §eZeit§7.");
-                return true;
+                return;
             }
             final String groupName = arguments[2];
 
             if(!VIPPerms.getInstance().getMySQL().getDatabaseGroups().groupExists(groupName)) {
                 sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Die Gruppe §e" + groupName + " §7ist nicht registriert.");
-                return true;
+                return;
             }
 
             if(arguments.length == 3) {
@@ -100,31 +99,29 @@ public class VIPPermsCommand implements CommandExecutor {
                 VIPPerms.getInstance().updatePermissionsPlayer(uuid, PlayerValue.GROUP_EXPIRES, (long) -1);
                 sender.sendMessage(VIPPerms.getInstance().getPrefix() + "§e" + playerName + " §7hat die Gruppe §e" + groupName + " §8» §aLifetime §7erhalten.");
 
-                if(VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Settings.BungeeCord")) {
-                    if(Bukkit.getPlayer(uuid) != null) {
-                        sendReloadPlayer(Bukkit.getPlayer(uuid));
+                if(VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Kick.Enable")) {
+                    if(ProxyServer.getInstance().getPlayer(uuid) != null) {
+                        String kickMessage = ChatColor.translateAlternateColorCodes('&', VIPPerms.getInstance().getSettingsConfiguration().getString("Kick.Message"));
+                        String name = VIPPerms.getInstance().getPermissionsGroup(groupName).getName();
+                        name = name.substring(0,1).toUpperCase() + name.substring(1).toLowerCase();
+
+                        kickMessage = kickMessage.replace("{groupcolor}", VIPPerms.getInstance().getPermissionsGroup(groupName).getColor());
+                        kickMessage = kickMessage.replace("{groupname}", name);
+                        kickMessage = kickMessage.replace("{time}", "Lifetime");
+
+                        ProxyServer.getInstance().getPlayer(uuid).disconnect(kickMessage);
                     }
+                    ProxyServer.getInstance().getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), false));
                 } else {
-                    if(VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Kick.Enable")) {
-                        if(Bukkit.getPlayer(uuid) != null) {
-                            String kickMessage = ChatColor.translateAlternateColorCodes('&', VIPPerms.getInstance().getSettingsConfiguration().getString("Kick.Message"));
-                            String name = VIPPerms.getInstance().getPermissionsGroup(groupName).getName();
-                            name = name.substring(0,1).toUpperCase() + name.substring(1).toLowerCase();
+                    if(ProxyServer.getInstance().getPlayer(uuid) != null) {
+                        VIPPerms.getInstance().resetPlayerPermissions(ProxyServer.getInstance().getPlayer(uuid));
+                        VIPPerms.getInstance().setPlayerPermissions(ProxyServer.getInstance().getPlayer(uuid), true);
 
-                            kickMessage = kickMessage.replace("{groupcolor}", VIPPerms.getInstance().getPermissionsGroup(groupName).getColor());
-                            kickMessage = kickMessage.replace("{groupname}", name);
-                            kickMessage = kickMessage.replace("{time}", "Lifetime");
-
-                            Bukkit.getPlayer(uuid).kickPlayer(kickMessage);
-                        }
-                        Bukkit.getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), false));
-                    } else {
-                        if(Bukkit.getPlayer(uuid) != null) {
-                            VIPPerms.getInstance().resetPlayerPermissions(Bukkit.getPlayer(uuid));
-                            VIPPerms.getInstance().setPlayerPermissions(Bukkit.getPlayer(uuid), true);
-                        }
-                        Bukkit.getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), true));
+                        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                            out.writeUTF(uuid.toString());
+                        ProxyServer.getInstance().getPlayer(uuid).getServer().getInfo().sendData("vipperms:reloadplayer", out.toByteArray());
                     }
+                    ProxyServer.getInstance().getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), true));
                 }
 
             }
@@ -134,31 +131,29 @@ public class VIPPermsCommand implements CommandExecutor {
                 VIPPerms.getInstance().updatePermissionsPlayer(uuid, PlayerValue.GROUP_EXPIRES, VIPPerms.getInstance().getGroupExpiresTimeHelper().getExpiresTimeMillis(arguments[3]));
                 sender.sendMessage(VIPPerms.getInstance().getPrefix() + "§e" + playerName + " §7hat die Gruppe §e" + groupName + " §8» §c" + arguments[3] + " §7erhalten.");
 
-                if(VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Settings.BungeeCord")) {
-                    if(Bukkit.getPlayer(uuid) != null) {
-                        sendReloadPlayer(Bukkit.getPlayer(uuid));
+                if(VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Kick.Enable")) {
+                    if(ProxyServer.getInstance().getPlayer(uuid) != null) {
+                        String kickMessage = ChatColor.translateAlternateColorCodes('&', VIPPerms.getInstance().getSettingsConfiguration().getString("Kick.Message"));
+                        String name = VIPPerms.getInstance().getPermissionsGroup(groupName).getName();
+                        name = name.substring(0,1).toUpperCase() + name.substring(1).toLowerCase();
+
+                        kickMessage = kickMessage.replace("{groupcolor}", VIPPerms.getInstance().getPermissionsGroup(groupName).getColor());
+                        kickMessage = kickMessage.replace("{groupname}", name);
+                        kickMessage = kickMessage.replace("{time}", arguments[3]);
+
+                        ProxyServer.getInstance().getPlayer(uuid).disconnect(kickMessage);
                     }
+                    ProxyServer.getInstance().getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), false));
                 } else {
-                    if(VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Kick.Enable")) {
-                        if(Bukkit.getPlayer(uuid) != null) {
-                            String kickMessage = ChatColor.translateAlternateColorCodes('&', VIPPerms.getInstance().getSettingsConfiguration().getString("Kick.Message"));
-                            String name = VIPPerms.getInstance().getPermissionsGroup(groupName).getName();
-                            name = name.substring(0,1).toUpperCase() + name.substring(1).toLowerCase();
+                    if(ProxyServer.getInstance().getPlayer(uuid) != null) {
+                        VIPPerms.getInstance().resetPlayerPermissions(ProxyServer.getInstance().getPlayer(uuid));
+                        VIPPerms.getInstance().setPlayerPermissions(ProxyServer.getInstance().getPlayer(uuid), true);
 
-                            kickMessage = kickMessage.replace("{groupcolor}", VIPPerms.getInstance().getPermissionsGroup(groupName).getColor());
-                            kickMessage = kickMessage.replace("{groupname}", name);
-                            kickMessage = kickMessage.replace("{time}", arguments[3]);
-
-                            Bukkit.getPlayer(uuid).kickPlayer(kickMessage);
-                        }
-                        Bukkit.getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), false));
-                    } else {
-                        if(Bukkit.getPlayer(uuid) != null) {
-                            VIPPerms.getInstance().resetPlayerPermissions(Bukkit.getPlayer(uuid));
-                            VIPPerms.getInstance().setPlayerPermissions(Bukkit.getPlayer(uuid), true);
-                        }
-                        Bukkit.getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), true));
+                        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                            out.writeUTF(uuid.toString());
+                        ProxyServer.getInstance().getPlayer(uuid).getServer().getInfo().sendData("vipperms:reloadplayer", out.toByteArray());
                     }
+                    ProxyServer.getInstance().getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), true));
                 }
 
             }
@@ -166,21 +161,26 @@ public class VIPPermsCommand implements CommandExecutor {
         } else if(arguments[0].equalsIgnoreCase("reload")) {
 
             try {
-                Method method = Class.forName("vip.marcel.vipperms.spigot.vipperms.VIPPerms").getDeclaredMethod("loadGroupsCache");
+                Method method = Class.forName("vip.marcel.vipperms.proxy.vipperms.VIPPerms").getDeclaredMethod("loadGroupsCache");
                 method.setAccessible(true);
                 method.invoke(VIPPerms.getInstance());
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
 
-            sendReloadGroups();
+            for(String server : ProxyServer.getInstance().getServers().keySet()) {
+                ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                ProxyServer.getInstance().getServerInfo(server).sendData("vipperms:reloadgroups", out.toByteArray());
+            }
+
+
             sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Du hast den §eGruppen- Cache §7neu initialisiert.");
 
         } else {
             sendHelpTopic(sender);
         }
 
-        return true;
+        return;
     }
 
     private void sendHelpTopic(CommandSender sender) {
@@ -212,24 +212,6 @@ public class VIPPermsCommand implements CommandExecutor {
         sender.sendMessage(VIPPerms.getInstance().getPrefix() + "   §7§oSystem- Befehle §8»");
         sender.sendMessage(VIPPerms.getInstance().getPrefix() + "§8/§bvp §ereload §8| §7Nur Gruppen- Cache");
         sender.sendMessage(VIPPerms.getInstance().getPrefix());
-    }
-
-    private void sendReloadPlayer(Player player) {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        DataOutputStream out = new DataOutputStream(outStream);
-
-        try {
-            out.writeUTF(player.getUniqueId().toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        player.sendPluginMessage(VIPPerms.getInstance(), "vipperms:reloadplayer", outStream.toByteArray());
-    }
-
-    private void sendReloadGroups() {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        Bukkit.getServer().sendPluginMessage(VIPPerms.getInstance(), "vipperms:reloadplayer", outStream.toByteArray());
     }
 
 }

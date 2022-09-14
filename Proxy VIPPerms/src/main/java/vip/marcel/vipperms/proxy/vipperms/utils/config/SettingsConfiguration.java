@@ -37,6 +37,8 @@ public class SettingsConfiguration implements ConfigHandler {
                 this.configuration.set("Player.Update-Displayname", true);
                 this.configuration.set("Chat.Enable", true);
                 this.configuration.set("Chat.Format", "{prefix}{color}{player}{suffix} &8» &r{message}");
+                this.configuration.set("Kick.Enable", false);
+                this.configuration.set("Kick.Message", "&aDein Rang wurde geändert.\n&7Rang &8» {groupcolor}{groupname}\n&7Zeit &8» &a{time}");
                 saveConfig();
             } catch (IOException e) {
                 e.printStackTrace();

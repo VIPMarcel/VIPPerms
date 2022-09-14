@@ -1,12 +1,15 @@
 package vip.marcel.vipperms.proxy.vipperms;
 
 import com.google.common.collect.Maps;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import vip.marcel.vipperms.proxy.vipperms.api.PermissionsGroup;
 import vip.marcel.vipperms.proxy.vipperms.api.PermissionsPlayer;
 import vip.marcel.vipperms.proxy.vipperms.api.values.GroupValue;
 import vip.marcel.vipperms.proxy.vipperms.api.values.PlayerValue;
+import vip.marcel.vipperms.proxy.vipperms.commands.VIPPermsCommand;
+import vip.marcel.vipperms.proxy.vipperms.listeners.PluginMessageListener;
 import vip.marcel.vipperms.proxy.vipperms.listeners.ServerConnectListener;
 import vip.marcel.vipperms.proxy.vipperms.plugin.groups.PermissionsGroupCache;
 import vip.marcel.vipperms.proxy.vipperms.plugin.groups.PermissionsGroupService;
@@ -45,6 +48,9 @@ public final class VIPPerms extends Plugin {
         this.init();
         this.registerListeners();
         this.loadGroupsCache();
+
+        ProxyServer.getInstance().registerChannel("vipperms:reloadgroups");
+        ProxyServer.getInstance().registerChannel("vipperms:reloadplayer");
     }
 
     @Override
@@ -74,6 +80,9 @@ public final class VIPPerms extends Plugin {
 
     private void registerListeners() {
         new ServerConnectListener();
+        new PluginMessageListener();
+
+        ProxyServer.getInstance().getPluginManager().registerCommand(this, new VIPPermsCommand("vipperms", "vipperms.*", "vp"));
     }
 
     private void loadGroupsCache() {
