@@ -28,7 +28,9 @@ public class PlayerLoginListener implements Listener {
         CompletableFuture.supplyAsync(() -> {
 
             if(!VIPPerms.getInstance().getMySQL().getDatabasePlayers().playerExists(player.getUniqueId())) {
-                VIPPerms.getInstance().getMySQL().getDatabasePlayers().createPlayer(player.getUniqueId(), player.getName());
+                if(!VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Settings.BungeeCord")) {
+                    VIPPerms.getInstance().getMySQL().getDatabasePlayers().createPlayer(player.getUniqueId(), player.getName());
+                }
             } else {
                 VIPPerms.getInstance().getMySQL().getDatabasePlayers().setName(player.getUniqueId(), player.getName());
             }
