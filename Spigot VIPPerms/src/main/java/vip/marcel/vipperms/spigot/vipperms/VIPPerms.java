@@ -234,6 +234,11 @@ public class VIPPerms extends JavaPlugin {
                     }
 
                 }
+
+                if(VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Player.Update-Displayname")) {
+                    player.setDisplayName(playerGroup.getColor() + player.getName());
+                }
+
             }, true);
         } else {
             final PermissionsPlayer permissionsPlayer = getPermissionsPlayer(player.getUniqueId());
@@ -263,6 +268,10 @@ public class VIPPerms extends JavaPlugin {
                     }
                 }
 
+            }
+
+            if(VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Player.Update-Displayname")) {
+                player.setDisplayName(playerGroup.getColor() + player.getName());
             }
 
         }
