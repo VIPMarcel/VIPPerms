@@ -11,6 +11,7 @@ import vip.marcel.vipperms.spigot.vipperms.api.values.GroupValue;
 import vip.marcel.vipperms.spigot.vipperms.api.values.PlayerValue;
 import vip.marcel.vipperms.spigot.vipperms.commands.VIPPermsCommand;
 import vip.marcel.vipperms.spigot.vipperms.listener.AsyncPlayerChatListener;
+import vip.marcel.vipperms.spigot.vipperms.listener.PlayerJoinListener;
 import vip.marcel.vipperms.spigot.vipperms.listener.PlayerLoginListener;
 import vip.marcel.vipperms.spigot.vipperms.listener.PluginMessagingListener;
 import vip.marcel.vipperms.spigot.vipperms.plugin.groups.PermissionsGroupCache;
@@ -96,6 +97,7 @@ public class VIPPerms extends JavaPlugin {
 
     private void registerListeners() {
         new PlayerLoginListener();
+        new PlayerJoinListener();
         new AsyncPlayerChatListener();
 
         new VIPPermsCommand();

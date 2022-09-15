@@ -25,7 +25,7 @@ public class PlayerLoginListener implements Listener {
         player.setOp(false);
         VIPPerms.getInstance().resetPlayerPermissions(player);
 
-        CompletableFuture.supplyAsync(() -> {
+        CompletableFuture.runAsync(() -> {
 
             if(!VIPPerms.getInstance().getMySQL().getDatabasePlayers().playerExists(player.getUniqueId())) {
                 if(!VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Settings.BungeeCord")) {
@@ -41,21 +41,9 @@ public class PlayerLoginListener implements Listener {
                 VIPPerms.getInstance().updatePermissionsPlayer(player.getUniqueId(), PlayerValue.GROUP_EXPIRES, (long) -1);
             }
 
-            VIPPerms.getInstance().setPlayerPermissions(player, true);
-            return true;
-        }).thenAccept(finished -> {
-            if(finished) {
-                Bukkit.getScheduler().runTaskLater(VIPPerms.getInstance(), () -> {
-                    player.recalculatePermissions();
-                }, 20);
-            }
         });
 
-        Bukkit.getScheduler().runTaskLater(VIPPerms.getInstance(), () -> {
-            if(player.hasPermission("vipperms.autoop")) {
-                player.setOp(true);
-            }
-        }, 25);
+        VIPPerms.getInstance().setPlayerPermissions(player, true);
 
     }
 
