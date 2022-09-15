@@ -29,6 +29,10 @@ public class PluginMessagingListener implements PluginMessageListener {
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
+
+            Bukkit.getServer().getOnlinePlayers().forEach(players -> {
+                VIPPerms.getInstance().setScoreboard(players);
+            });
         }
 
         if(channel.equals("vipperms:reloadplayer")) {
@@ -38,17 +42,11 @@ public class PluginMessagingListener implements PluginMessageListener {
             final Player target = Bukkit.getPlayer(uuid);
 
             if(target != null) {
-                VIPPerms.getInstance().resetPlayerPermissions(target);
                 target.setOp(false);
+                VIPPerms.getInstance().resetPlayerPermissions(target);
+
                 VIPPerms.getInstance().setPlayerPermissions(target, true);
-
-                Bukkit.getScheduler().runTaskLater(VIPPerms.getInstance(), () -> {
-                    Bukkit.getPlayer(uuid).recalculatePermissions();
-
-                    if(player.hasPermission("vipperms.autoop")) {
-                        player.setOp(true);
-                    }
-                }, 20);
+                VIPPerms.getInstance().setScoreboard(target);
 
                 Bukkit.getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, null, true));
             }

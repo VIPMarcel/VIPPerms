@@ -8,6 +8,8 @@ public interface PermissionsGroup {
 
     UUID getUUID();
 
+    Integer getTabSortId();
+
     String getName();
 
     String getPrefix();

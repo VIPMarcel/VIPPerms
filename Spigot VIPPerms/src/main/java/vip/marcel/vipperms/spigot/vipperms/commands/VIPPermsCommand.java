@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import vip.marcel.vipperms.spigot.vipperms.VIPPerms;
 import vip.marcel.vipperms.spigot.vipperms.api.values.PlayerValue;
@@ -15,9 +16,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-public class VIPPermsCommand implements CommandExecutor {
+public class VIPPermsCommand implements CommandExecutor, TabExecutor {
 
     public VIPPermsCommand() {
         VIPPerms.getInstance().getCommand("vipperms").setExecutor(this);
@@ -122,13 +127,10 @@ public class VIPPermsCommand implements CommandExecutor {
                         if(Bukkit.getPlayer(uuid) != null) {
                             VIPPerms.getInstance().resetPlayerPermissions(Bukkit.getPlayer(uuid));
                             VIPPerms.getInstance().setPlayerPermissions(Bukkit.getPlayer(uuid), true);
-                            Bukkit.getScheduler().runTaskLater(VIPPerms.getInstance(), () -> {
-                                Bukkit.getPlayer(uuid).recalculatePermissions();
 
-                                if(Bukkit.getPlayer(uuid).hasPermission("vipperms.autoop")) {
-                                    Bukkit.getPlayer(uuid).setOp(true);
-                                }
-                            }, 20);
+                            Bukkit.getServer().getOnlinePlayers().forEach(players -> {
+                                VIPPerms.getInstance().setScoreboard(players);
+                            });
                         }
                         Bukkit.getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), true));
                     }
@@ -163,13 +165,10 @@ public class VIPPermsCommand implements CommandExecutor {
                         if(Bukkit.getPlayer(uuid) != null) {
                             VIPPerms.getInstance().resetPlayerPermissions(Bukkit.getPlayer(uuid));
                             VIPPerms.getInstance().setPlayerPermissions(Bukkit.getPlayer(uuid), true);
-                            Bukkit.getScheduler().runTaskLater(VIPPerms.getInstance(), () -> {
-                                Bukkit.getPlayer(uuid).recalculatePermissions();
 
-                                if(Bukkit.getPlayer(uuid).hasPermission("vipperms.autoop")) {
-                                    Bukkit.getPlayer(uuid).setOp(true);
-                                }
-                            }, 20);
+                            Bukkit.getServer().getOnlinePlayers().forEach(players -> {
+                                VIPPerms.getInstance().setScoreboard(players);
+                            });
                         }
                         Bukkit.getPluginManager().callEvent(new PlayerGroupChangeEvent(uuid, VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), true));
                     }
@@ -186,6 +185,10 @@ public class VIPPermsCommand implements CommandExecutor {
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
+
+            Bukkit.getServer().getOnlinePlayers().forEach(players -> {
+                VIPPerms.getInstance().setScoreboard(players);
+            });
 
             sendReloadGroups();
             sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Du hast den §eGruppen- Cache §7neu initialisiert.");
@@ -244,6 +247,38 @@ public class VIPPermsCommand implements CommandExecutor {
     private void sendReloadGroups() {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         Bukkit.getServer().sendPluginMessage(VIPPerms.getInstance(), "vipperms:reloadplayer", outStream.toByteArray());
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] arguments) {
+        List<String> output = new ArrayList<>();
+
+        if(command.getName().equalsIgnoreCase("vipperms") | command.getName().equalsIgnoreCase("vp")) {
+            if(sender.hasPermission("vipperms.*")) {
+
+                if(arguments.length == 1) {
+                    output.add("help");
+                    output.add("creategroup");
+                    output.add("setgroup");
+                    output.add("reload");
+                }
+
+                if(arguments[0].equalsIgnoreCase("setgroup")) {
+                    if(arguments.length == 2) {
+                        for(Player players : Bukkit.getServer().getOnlinePlayers()) {
+                            output.add(players.getName());
+                        }
+                    } else if(arguments.length == 3) {
+                        VIPPerms.getInstance().getPermissionsGroups().forEach(group -> {
+                            output.add(group.getName());
+                        });
+                    }
+                }
+
+            }
+        }
+
+        return output.stream().filter(Objects::nonNull).collect(Collectors.toList());
     }
 
 }

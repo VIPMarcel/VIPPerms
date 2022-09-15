@@ -7,15 +7,20 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
+import net.md_5.bungee.api.plugin.TabExecutor;
 import vip.marcel.vipperms.proxy.vipperms.VIPPerms;
 import vip.marcel.vipperms.proxy.vipperms.api.values.PlayerValue;
 import vip.marcel.vipperms.proxy.vipperms.events.PlayerGroupChangeEvent;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-public class VIPPermsCommand extends Command {
+public class VIPPermsCommand extends Command implements TabExecutor {
 
     public VIPPermsCommand(String name, String permission, String... aliases) {
         super(name, permission, aliases);
@@ -212,6 +217,36 @@ public class VIPPermsCommand extends Command {
         sender.sendMessage(VIPPerms.getInstance().getPrefix() + "   §7§oSystem- Befehle §8»");
         sender.sendMessage(VIPPerms.getInstance().getPrefix() + "§8/§bvp §ereload §8| §7Nur Gruppen- Cache");
         sender.sendMessage(VIPPerms.getInstance().getPrefix());
+    }
+
+    @Override
+    public Iterable<String> onTabComplete(CommandSender sender, String[] arguments) {
+        List<String> output = new ArrayList<>();
+
+        if(sender.hasPermission("vipperms.*")) {
+
+            if(arguments.length == 1) {
+                output.add("help");
+                output.add("creategroup");
+                output.add("setgroup");
+                output.add("reload");
+            }
+
+            if(arguments[0].equalsIgnoreCase("setgroup")) {
+                if(arguments.length == 2) {
+                    for(ProxiedPlayer players : ProxyServer.getInstance().getPlayers()) {
+                        output.add(players.getName());
+                    }
+                } else if(arguments.length == 3) {
+                    VIPPerms.getInstance().getPermissionsGroups().forEach(group -> {
+                        output.add(group.getName());
+                    });
+                }
+            }
+
+        }
+
+        return output.stream().filter(Objects::nonNull).collect(Collectors.toList());
     }
 
 }

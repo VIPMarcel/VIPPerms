@@ -69,14 +69,15 @@ public class DatabaseGroups {
         VIPPerms.getInstance().getLogger().log(Level.INFO, "Group 'default' automatically created.");
 
         try {
-            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("INSERT INTO " + table + "(UUID, GroupName, Prefix, Suffix, Color, Interhances, Permissions) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("INSERT INTO " + table + "(UUID, GroupName, TabSortIndex, Prefix, Suffix, Color, Interhances, Permissions) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             statement.setString(1, uniqueId.toString());
             statement.setString(2, "default");
-            statement.setString(3, "");
+            statement.setInt(3, 0);
             statement.setString(4, "");
             statement.setString(5, "");
             statement.setString(6, "");
-            statement.setString(7, "group.default:-1");
+            statement.setString(7, "");
+            statement.setString(8, "group.default:-1");
 
             statement.executeUpdate();
             statement.close();
@@ -109,14 +110,15 @@ public class DatabaseGroups {
         final UUID uniqueId = new UUID(System.currentTimeMillis(), 0);
 
         try {
-            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("INSERT INTO " + table + "(UUID, GroupName, Prefix, Suffix, Color, Interhances, Permissions) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("INSERT INTO " + table + "(UUID, GroupName, TabSortIndex, Prefix, Suffix, Color, Interhances, Permissions) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             statement.setString(1, uniqueId.toString());
             statement.setString(2, name);
-            statement.setString(3, "");
+            statement.setInt(3, 0);
             statement.setString(4, "");
             statement.setString(5, "");
             statement.setString(6, "");
-            statement.setString(7, "group." + name + ":-1");
+            statement.setString(7, "");
+            statement.setString(8, "group." + name + ":-1");
 
             statement.executeUpdate();
             statement.close();
@@ -155,6 +157,25 @@ public class DatabaseGroups {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public int getTabSortIndex(UUID uuid) {
+        try {
+            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("SELECT * FROM " + table + " WHERE UUID = ?");
+            statement.setString(1, uuid.toString());
+
+            final ResultSet resultSet = statement.executeQuery();
+
+            while(resultSet.next()) {
+                return resultSet.getInt("TabSortIndex");
+            }
+
+            resultSet.close();
+            statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     public String getName(UUID uuid) {
@@ -304,6 +325,18 @@ public class DatabaseGroups {
         try {
             final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("UPDATE " + table + " SET GroupName = ? WHERE UUID = ?");
             statement.setString(1, name);
+            statement.setString(2, uuid.toString());
+            statement.executeUpdate();
+            statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setTabSortIndex(UUID uuid, int index) {
+        try {
+            final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("UPDATE " + table + " SET TabSortIndex = ? WHERE UUID = ?");
+            statement.setInt(1, index);
             statement.setString(2, uuid.toString());
             statement.executeUpdate();
             statement.close();

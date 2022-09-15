@@ -1,10 +1,11 @@
 package vip.marcel.vipperms.spigot.vipperms.listener;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import vip.marcel.vipperms.spigot.vipperms.VIPPerms;
 import vip.marcel.vipperms.spigot.vipperms.api.values.PlayerValue;
 
@@ -17,20 +18,27 @@ public class PlayerLoginListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerLoginEvent(AsyncPlayerPreLoginEvent event) {
-        final UUID uuid = event.getUniqueId();
+    public void onPlayerLoginEvent(PlayerLoginEvent event) {
+        final Player player = event.getPlayer();
 
-        if(!VIPPerms.getInstance().getMySQL().getDatabasePlayers().playerExists(uuid)) {
-            if(!VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Settings.BungeeCord")) {
-                VIPPerms.getInstance().getMySQL().getDatabasePlayers().createPlayer(uuid, "-/-");
+        player.setOp(false);
+        VIPPerms.getInstance().resetPlayerPermissions(player);
+
+        if(!VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Settings.BungeeCord")) {
+            if(!VIPPerms.getInstance().getMySQL().getDatabasePlayers().playerExists(player.getUniqueId())) {
+                VIPPerms.getInstance().getMySQL().getDatabasePlayers().createPlayer(player.getUniqueId(), player.getName());
+            } else {
+                VIPPerms.getInstance().getMySQL().getDatabasePlayers().setName(player.getUniqueId(), player.getName());
             }
         }
 
-        final long groupExpiresMillis = VIPPerms.getInstance().getMySQL().getDatabasePlayers().getGroupExpires(uuid);
+        final long groupExpiresMillis = VIPPerms.getInstance().getMySQL().getDatabasePlayers().getGroupExpires(player.getUniqueId());
         if(groupExpiresMillis <= System.currentTimeMillis() && groupExpiresMillis != -1) {
-            VIPPerms.getInstance().updatePermissionsPlayer(uuid, PlayerValue.GROUPID, UUID.fromString("00000183-31c6-bb2a-0000-000000000000"));
-            VIPPerms.getInstance().updatePermissionsPlayer(uuid, PlayerValue.GROUP_EXPIRES, (long) -1);
+            VIPPerms.getInstance().updatePermissionsPlayer(player.getUniqueId(), PlayerValue.GROUPID, UUID.fromString("00000183-31c6-bb2a-0000-000000000000"));
+            VIPPerms.getInstance().updatePermissionsPlayer(player.getUniqueId(), PlayerValue.GROUP_EXPIRES, (long) -1);
         }
+
+        VIPPerms.getInstance().setPlayerPermissions(player, true);
 
     }
 

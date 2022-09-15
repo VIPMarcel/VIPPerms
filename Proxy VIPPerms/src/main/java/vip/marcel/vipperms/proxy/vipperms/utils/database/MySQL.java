@@ -44,7 +44,7 @@ public class MySQL {
             }
 
             {
-                final PreparedStatement statement = this.connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + this.tables + "groups (id INT AUTO_INCREMENT PRIMARY KEY, UUID TEXT, GroupName TEXT, Prefix TEXT, Suffix TEXT, Color TEXT, Interhances TEXT, Permissions TEXT)");
+                final PreparedStatement statement = this.connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + this.tables + "groups (id INT AUTO_INCREMENT PRIMARY KEY, UUID TEXT, GroupName TEXT, TabSortIndex TEXT, Prefix TEXT, Suffix TEXT, Color TEXT, Interhances TEXT, Permissions TEXT)");
                 statement.executeUpdate();
                 statement.close();
             }

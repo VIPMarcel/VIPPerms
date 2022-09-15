@@ -32,6 +32,7 @@ public class SettingsConfiguration implements ConfigHandler {
                 this.configuration.set("Chat.Format", "{prefix}{color}{player}{suffix} &8» &r{message}");
                 this.configuration.set("Kick.Enable", false);
                 this.configuration.set("Kick.Message", "&aDein Rang wurde geändert.\n&7Rang &8» {groupcolor}{groupname}\n&7Zeit &8» &a{time}");
+                this.configuration.set("Tab.Enable", true);
                 this.configuration.save(this.file);
             } catch (IOException e) {
                 e.printStackTrace();

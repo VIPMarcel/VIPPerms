@@ -28,6 +28,11 @@ public class PermissionsGroupService implements PermissionsGroup {
     }
 
     @Override
+    public Integer getTabSortId() {
+        return VIPPerms.getInstance().getMySQL().getDatabaseGroups().getTabSortIndex(this.uuid);
+    }
+
+    @Override
     public String getName() {
         return (this.name != null ? this.name : VIPPerms.getInstance().getMySQL().getDatabaseGroups().getName(this.uuid));
     }

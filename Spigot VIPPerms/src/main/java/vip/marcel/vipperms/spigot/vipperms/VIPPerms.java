@@ -1,10 +1,12 @@
 package vip.marcel.vipperms.spigot.vipperms;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.DisplaySlot;
 import vip.marcel.vipperms.spigot.vipperms.api.PermissionsGroup;
 import vip.marcel.vipperms.spigot.vipperms.api.PermissionsPlayer;
 import vip.marcel.vipperms.spigot.vipperms.api.values.GroupValue;
@@ -20,7 +22,9 @@ import vip.marcel.vipperms.spigot.vipperms.plugin.players.PermissionsPlayerCache
 import vip.marcel.vipperms.spigot.vipperms.plugin.players.PermissionsPlayerService;
 import vip.marcel.vipperms.spigot.vipperms.utils.config.SettingsConfiguration;
 import vip.marcel.vipperms.spigot.vipperms.utils.database.MySQL;
+import vip.marcel.vipperms.spigot.vipperms.utils.entities.VIPScoreboardTeam;
 import vip.marcel.vipperms.spigot.vipperms.utils.helper.GroupExpiresTimeHelper;
+import vip.marcel.vipperms.spigot.vipperms.utils.helper.ScoreboardHelper;
 
 import java.util.Iterator;
 import java.util.List;
@@ -103,6 +107,46 @@ public class VIPPerms extends JavaPlugin {
         new VIPPermsCommand();
     }
 
+    public void setScoreboard(Player player) {
+        final List<VIPScoreboardTeam> scoreboardTeams = Lists.newArrayList();
+
+        if(!this.settingsConfiguration.getBoolean("Tab.Enable")) {
+            return;
+        }
+
+        getPermissionsGroups().forEach(group -> {
+            VIPScoreboardTeam team = new VIPScoreboardTeam();
+            team.setSortId(group.getTabSortId());
+            team.setName(group.getName());
+            team.setPrefix(group.getPrefix());
+            team.setSuffix(group.getSuffix());
+            team.setColor(group.getColor().length() > 1 ? group.getColor().substring(0, 2) : group.getColor());
+
+            scoreboardTeams.add(team);
+        });
+
+        new ScoreboardHelper(player)
+                .setDisplaySlot(DisplaySlot.SIDEBAR)
+                .addTeams(scoreboardTeams)
+                .build();
+
+        final ScoreboardHelper scoreboardHelper = new ScoreboardHelper();
+
+        final int playerTeamIndex = getPermissionsGroup(getPermissionsPlayer(player.getUniqueId()).getGroupId()).getTabSortId();
+        final String playerTeamName = getPermissionsGroup(getPermissionsPlayer(player.getUniqueId()).getGroupId()).getName();
+
+        scoreboardHelper.updatePlayerTeam(player, playerTeamIndex, playerTeamName, false);
+
+    }
+
+    public List<PermissionsGroup> getPermissionsGroups() {
+        final List<PermissionsGroup> output = Lists.newArrayList();
+
+        output.addAll(this.permissionsGroups.values());
+
+        return output;
+    }
+
     public PermissionsGroup getPermissionsGroup(UUID uuid) {
         return new PermissionsGroupCache(uuid, this.permissionsGroups);
     }
@@ -127,8 +171,9 @@ public class VIPPerms extends JavaPlugin {
         return new PermissionsPlayerCache(uuid, this.permissionsPlayers);
     }
 
+    /* Synchronized method!!! (no delay at login-event)  */
     public void getPermissionsPlayer(UUID uuid, Consumer<PermissionsPlayer> callback, boolean reloadCache) {
-        CompletableFuture.runAsync(() -> {
+        //CompletableFuture.runAsync(() -> {
             final PermissionsPlayerService permissionsPlayerService = new PermissionsPlayerService(uuid);
 
             if(!this.permissionsPlayers.containsKey(permissionsPlayerService.getUUID()) | reloadCache) {
@@ -136,7 +181,7 @@ public class VIPPerms extends JavaPlugin {
             }
 
             callback.accept(permissionsPlayerService);
-        });
+        //});
     }
 
     public PermissionsPlayer getPermissionsPlayer(String name) {
@@ -241,6 +286,12 @@ public class VIPPerms extends JavaPlugin {
                     player.setDisplayName(playerGroup.getColor() + player.getName());
                 }
 
+                player.recalculatePermissions();
+
+                if(player.hasPermission("vipperms.autoop")) {
+                    player.setOp(true);
+                }
+
             }, true);
         } else {
             final PermissionsPlayer permissionsPlayer = getPermissionsPlayer(player.getUniqueId());
@@ -274,6 +325,12 @@ public class VIPPerms extends JavaPlugin {
 
             if(VIPPerms.getInstance().getSettingsConfiguration().getBoolean("Player.Update-Displayname")) {
                 player.setDisplayName(playerGroup.getColor() + player.getName());
+            }
+
+            player.recalculatePermissions();
+
+            if(player.hasPermission("vipperms.autoop")) {
+                player.setOp(true);
             }
 
         }

@@ -41,6 +41,11 @@ public class PermissionsGroupCache implements PermissionsGroup {
     }
 
     @Override
+    public Integer getTabSortId() {
+        return this.cache.get(uuid).getTabSortId();
+    }
+
+    @Override
     public String getName() {
         return this.name;
     }
