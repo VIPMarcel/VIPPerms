@@ -75,6 +75,90 @@ public class VIPPermsCommand implements CommandExecutor, TabExecutor {
             VIPPerms.getInstance().getMySQL().getDatabaseGroups().createGroup(groupName);
             sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Gruppe §e" + groupName + " §7erstellt.");
 
+        } else if(arguments[0].equalsIgnoreCase("setprefix")) {
+
+            if(arguments.length == 1) {
+                sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Gebe einen §eGruppennamen §7an, um den Prefix zu setzen.");
+                return true;
+            }
+            final String groupName = arguments[1].toLowerCase();
+
+            if(!VIPPerms.getInstance().getMySQL().getDatabaseGroups().groupExists(groupName)) {
+                sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Die Gruppe §e" + groupName + " §7ist nicht registriert.");
+                return true;
+            }
+
+            if(arguments.length == 2) {
+                VIPPerms.getInstance().getMySQL().getDatabaseGroups().setPrefix(VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), "");
+                sender.sendMessage(VIPPerms.getInstance().getPrefix() + "§ePrefix wurde entfernt!");
+                sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Gebe einen §ePrefix §7an, um ihn zu setzen.");
+                return true;
+            }
+
+            final StringBuilder builder = new StringBuilder();
+            for(int i = 2; i < arguments.length; i++) {
+                builder.append(arguments[i]).append(" ");
+            }
+
+            VIPPerms.getInstance().getMySQL().getDatabaseGroups().setPrefix(VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), builder.toString().replaceAll("&", "§"));
+            sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Gruppe §e" + groupName + " §8» §ePrefix §7gesetzt: " + builder.toString());
+
+        } else if(arguments[0].equalsIgnoreCase("setsuffix")) {
+
+            if(arguments.length == 1) {
+                sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Gebe einen §eGruppennamen §7an, um den Suffix zu setzen.");
+                return true;
+            }
+            final String groupName = arguments[1].toLowerCase();
+
+            if(!VIPPerms.getInstance().getMySQL().getDatabaseGroups().groupExists(groupName)) {
+                sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Die Gruppe §e" + groupName + " §7ist nicht registriert.");
+                return true;
+            }
+
+            if(arguments.length == 2) {
+                VIPPerms.getInstance().getMySQL().getDatabaseGroups().setSuffix(VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), "");
+                sender.sendMessage(VIPPerms.getInstance().getPrefix() + "§eSuffix wurde entfernt!");
+                sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Gebe einen §eSuffix §7an, um ihn zu setzen.");
+                return true;
+            }
+
+            final StringBuilder builder = new StringBuilder();
+            for(int i = 2; i < arguments.length; i++) {
+                builder.append(arguments[i]).append(" ");
+            }
+
+            VIPPerms.getInstance().getMySQL().getDatabaseGroups().setSuffix(VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), builder.toString().replaceAll("&", "§"));
+            sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Gruppe §e" + groupName + " §8» §eSuffix §7gesetzt: " + builder.toString());
+
+        } else if(arguments[0].equalsIgnoreCase("setcolor")) {
+
+            if(arguments.length == 1) {
+                sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Gebe einen §eGruppennamen §7an, um die Farbe zu setzen.");
+                return true;
+            }
+            final String groupName = arguments[1].toLowerCase();
+
+            if(!VIPPerms.getInstance().getMySQL().getDatabaseGroups().groupExists(groupName)) {
+                sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Die Gruppe §e" + groupName + " §7ist nicht registriert.");
+                return true;
+            }
+
+            if(arguments.length == 2) {
+                VIPPerms.getInstance().getMySQL().getDatabaseGroups().setColor(VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), "");
+                sender.sendMessage(VIPPerms.getInstance().getPrefix() + "§eFarbe wurde entfernt!");
+                sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Gebe eine §eFarbe §7an, um ihn zu setzen.");
+                return true;
+            }
+
+            final StringBuilder builder = new StringBuilder();
+            for(int i = 2; i < arguments.length; i++) {
+                builder.append(arguments[i]).append(" ");
+            }
+
+            VIPPerms.getInstance().getMySQL().getDatabaseGroups().setColor(VIPPerms.getInstance().getPermissionsGroup(groupName).getUUID(), builder.toString().replaceAll("&", "§"));
+            sender.sendMessage(VIPPerms.getInstance().getPrefix() + "Gruppe §e" + groupName + " §8» §eFarbe §7gesetzt: " + builder.toString());
+
         } else if(arguments[0].equalsIgnoreCase("setGroup")) {
 
             if(arguments.length == 1) {
@@ -222,6 +306,9 @@ public class VIPPermsCommand implements CommandExecutor, TabExecutor {
         sender.sendMessage(VIPPerms.getInstance().getPrefix());
         sender.sendMessage(VIPPerms.getInstance().getPrefix() + "   §7§oGruppen- Befehle §8»");
         sender.sendMessage(VIPPerms.getInstance().getPrefix() + "§8/§bvp §ecreateGroup §8<§7Name§8>");
+        sender.sendMessage(VIPPerms.getInstance().getPrefix() + "§8/§bvp §esetprefix §8<§7Name§8> §8<§7Prefix§8>");
+        sender.sendMessage(VIPPerms.getInstance().getPrefix() + "§8/§bvp §esetsuffix §8<§7Name§8> §8<§7Suffix§8>");
+        sender.sendMessage(VIPPerms.getInstance().getPrefix() + "§8/§bvp §esetcolor §8<§7Name§8> §8<§7Color§8>");
         sender.sendMessage(VIPPerms.getInstance().getPrefix());
         sender.sendMessage(VIPPerms.getInstance().getPrefix() + "   §7§oSpieler- Befehle §8»");
         sender.sendMessage(VIPPerms.getInstance().getPrefix() + "§8/§bvp §esetGroup §8<§7Spieler§8> <§7Gruppe§8> [§7Zeit§8]");
@@ -259,6 +346,9 @@ public class VIPPermsCommand implements CommandExecutor, TabExecutor {
                 if(arguments.length == 1) {
                     output.add("help");
                     output.add("creategroup");
+                    output.add("setprefix");
+                    output.add("setsuffix");
+                    output.add("setcolor");
                     output.add("setgroup");
                     output.add("reload");
                 }
@@ -269,6 +359,15 @@ public class VIPPermsCommand implements CommandExecutor, TabExecutor {
                             output.add(players.getName());
                         }
                     } else if(arguments.length == 3) {
+                        VIPPerms.getInstance().getPermissionsGroups().forEach(group -> {
+                            output.add(group.getName());
+                        });
+                    }
+                }
+                if(arguments[0].equalsIgnoreCase("setprefix") |
+                        arguments[0].equalsIgnoreCase("setsuffix") |
+                        arguments[0].equalsIgnoreCase("setcolor")) {
+                    if(arguments.length == 2) {
                         VIPPerms.getInstance().getPermissionsGroups().forEach(group -> {
                             output.add(group.getName());
                         });
