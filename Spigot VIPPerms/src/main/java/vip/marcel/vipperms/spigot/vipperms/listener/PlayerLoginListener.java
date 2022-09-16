@@ -9,6 +9,9 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import vip.marcel.vipperms.spigot.vipperms.VIPPerms;
 import vip.marcel.vipperms.spigot.vipperms.api.values.PlayerValue;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.UUID;
 
 public class PlayerLoginListener implements Listener {
@@ -36,10 +39,24 @@ public class PlayerLoginListener implements Listener {
         if(groupExpiresMillis <= System.currentTimeMillis() && groupExpiresMillis != -1) {
             VIPPerms.getInstance().updatePermissionsPlayer(player.getUniqueId(), PlayerValue.GROUPID, UUID.fromString("00000183-31c6-bb2a-0000-000000000000"));
             VIPPerms.getInstance().updatePermissionsPlayer(player.getUniqueId(), PlayerValue.GROUP_EXPIRES, (long) -1);
+            sendReloadPlayer(player);
         }
 
         VIPPerms.getInstance().setPlayerPermissions(player, true);
 
+    }
+
+    private void sendReloadPlayer(Player player) {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(outStream);
+
+        try {
+            out.writeUTF(player.getUniqueId().toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        player.sendPluginMessage(VIPPerms.getInstance(), "vipperms:reloadplayer", outStream.toByteArray());
     }
 
 }
