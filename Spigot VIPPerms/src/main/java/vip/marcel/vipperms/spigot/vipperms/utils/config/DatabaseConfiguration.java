@@ -26,6 +26,10 @@ public class DatabaseConfiguration implements ConfigHandler {
         if(!this.file.exists()) {
             try {
                 this.file.createNewFile();
+                this.configuration.set("Database.Redis.Hostname", "localhost");
+                this.configuration.set("Database.Redis.Port", 6379);
+                this.configuration.set("Database.Redis.Username", "default");
+                this.configuration.set("Database.Redis.Password", "");
                 this.configuration.set("Database.MySQL.Hostname", "localhost");
                 this.configuration.set("Database.MySQL.Port", 3306);
                 this.configuration.set("Database.MySQL.Database", "vipperms");

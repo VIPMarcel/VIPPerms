@@ -20,6 +20,11 @@ public class DatabasePlayers {
     }
 
     public boolean playerExists(UUID uuid) {
+
+        if(VIPPerms.getInstance().getJedis().exists("vipperms_player_" + uuid.toString() + "_groupid")) {
+            return true;
+        }
+
         try {
             final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("SELECT * FROM " + table + " WHERE UUID = ?");
             statement.setString(1, uuid.toString());
@@ -52,6 +57,8 @@ public class DatabasePlayers {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        VIPPerms.getInstance().getJedis().set("vipperms_player_" + uuid.toString() + "_groupid", UUID.fromString("00000183-31c6-bb2a-0000-000000000000").toString());
     }
 
     public void deletePlayer(UUID uuid) {
@@ -64,6 +71,8 @@ public class DatabasePlayers {
             } catch(SQLException e) {
                 e.printStackTrace();
             }
+
+            VIPPerms.getInstance().getJedis().del("vipperms_player_" + uuid.toString() + "_groupid");
         }
     }
 
@@ -106,6 +115,11 @@ public class DatabasePlayers {
     }
 
     public UUID getGroupUUID(UUID uuid) {
+
+        if(VIPPerms.getInstance().getJedis().exists("vipperms_player_" + uuid.toString() + "_groupid")) {
+            return UUID.fromString(VIPPerms.getInstance().getJedis().get("vipperms_player_" + uuid.toString() + "_groupid"));
+        }
+
         try {
             final PreparedStatement statement = this.mySQL.getConnection().prepareStatement("SELECT * FROM " + table + " WHERE UUID = ?");
             statement.setString(1, uuid.toString());
@@ -113,7 +127,10 @@ public class DatabasePlayers {
             final ResultSet resultSet = statement.executeQuery();
 
             while(resultSet.next()) {
-                return UUID.fromString(resultSet.getString("GroupId"));
+                final UUID groupId = UUID.fromString(resultSet.getString("GroupId"));
+                VIPPerms.getInstance().getJedis().set("vipperms_player_" + uuid.toString() + "_groupid", groupId.toString());
+
+                return groupId;
             }
 
             resultSet.close();
@@ -203,6 +220,8 @@ public class DatabasePlayers {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        VIPPerms.getInstance().getJedis().set("vipperms_player_" + uuid.toString() + "_groupid", groupUniqueId.toString());
     }
 
     public void setGroupExpires(UUID uuid, long groupExpiresAt) {

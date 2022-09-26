@@ -30,6 +30,10 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <id>jedis</id>
+            <url>https://mvnrepository.com/artifact/redis.clients/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -40,6 +44,11 @@
             <classifier>remapped-mojang</classifier>
             <type>jar</type>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>4.2.3</version>
         </dependency>
     </dependencies>
 
@@ -84,6 +93,27 @@
                             <inputFile>${project.build.directory}/${project.artifactId}-${project.version}-remapped-obf.jar</inputFile>
                             <srgIn>org.spigotmc:minecraft-server:${minecraft.version}:csrg:maps-spigot</srgIn>
                             <remappedDependencies>org.spigotmc:spigot:${minecraft.version}:jar:remapped-obf</remappedDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <relocations>
+                                <relocation>
+                                    <pattern>redis.clients.jedis</pattern>
+                                    <shadedPattern>vip.marcel.vipperms.spigot.vipperms.VIPPerms</shadedPattern>
+                                </relocation>
+                            </relocations>
                         </configuration>
                     </execution>
                 </executions>

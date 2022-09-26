@@ -7,6 +7,7 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.DisplaySlot;
+import redis.clients.jedis.Jedis;
 import vip.marcel.vipperms.spigot.vipperms.api.PermissionsGroup;
 import vip.marcel.vipperms.spigot.vipperms.api.PermissionsPlayer;
 import vip.marcel.vipperms.spigot.vipperms.api.values.GroupValue;
@@ -49,6 +50,8 @@ public class VIPPerms extends JavaPlugin {
 
     private MySQL mySQL;
 
+    private Jedis jedis;
+
     @Override
     public void onEnable() {
         instance = this;
@@ -66,6 +69,7 @@ public class VIPPerms extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        disconnectRedis();
         this.mySQL.disconnect();
     }
 
@@ -87,6 +91,7 @@ public class VIPPerms extends JavaPlugin {
 
         this.mySQL = new MySQL();
         this.mySQL.connect();
+        connectRedis();
     }
 
     private void loadGroupsCache() {
@@ -105,6 +110,26 @@ public class VIPPerms extends JavaPlugin {
         new AsyncPlayerChatListener();
 
         new VIPPermsCommand();
+    }
+
+    public void connectRedis() {
+
+        final String hostname = this.mySQL.getConfiguration().getConfiguration().getString("Database.Redis.Hostname");
+        final int port = this.mySQL.getConfiguration().getConfiguration().getInt("Database.Redis.Port");
+        final String username = this.mySQL.getConfiguration().getConfiguration().getString("Database.Redis.Username");
+        final String password = this.mySQL.getConfiguration().getConfiguration().getString("Database.Redis.Password");
+
+        this.jedis = new Jedis(hostname, port, 5000);
+        this.jedis.auth(username, password);
+
+        getLogger().log(Level.INFO, "Redis connection successfully opend!");
+    }
+
+    public void disconnectRedis() {
+        this.jedis.close();
+        this.jedis = null;
+
+        getLogger().log(Level.INFO, "Redis connection successfully closed!");
     }
 
     public void setScoreboard(Player player) {
@@ -168,12 +193,16 @@ public class VIPPerms extends JavaPlugin {
     }
 
     public PermissionsPlayer getPermissionsPlayer(UUID uuid) {
-        return new PermissionsPlayerCache(uuid, this.permissionsPlayers);
+        if(this.permissionsPlayers.containsKey(uuid)) {
+            return new PermissionsPlayerCache(uuid, this.permissionsPlayers);
+        } else {
+            return new PermissionsPlayerService(uuid);
+        }
     }
 
     /* Synchronized method!!! (no delay at login-event)  */
     public void getPermissionsPlayer(UUID uuid, Consumer<PermissionsPlayer> callback, boolean reloadCache) {
-        //CompletableFuture.runAsync(() -> {
+        CompletableFuture.runAsync(() -> {
             final PermissionsPlayerService permissionsPlayerService = new PermissionsPlayerService(uuid);
 
             if(!this.permissionsPlayers.containsKey(permissionsPlayerService.getUUID()) | reloadCache) {
@@ -181,7 +210,7 @@ public class VIPPerms extends JavaPlugin {
             }
 
             callback.accept(permissionsPlayerService);
-        //});
+        });
     }
 
     public PermissionsPlayer getPermissionsPlayer(String name) {
@@ -360,6 +389,10 @@ public class VIPPerms extends JavaPlugin {
 
     public MySQL getMySQL() {
         return this.mySQL;
+    }
+
+    public Jedis getJedis() {
+        return this.jedis;
     }
 
 }

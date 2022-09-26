@@ -59,6 +59,10 @@
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
+        <repository>
+            <id>jedis</id>
+            <url>https://mvnrepository.com/artifact/redis.clients/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -67,6 +71,11 @@
             <artifactId>waterfall-api</artifactId>
             <version>1.19-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>4.2.3</version>
         </dependency>
     </dependencies>
 </project>

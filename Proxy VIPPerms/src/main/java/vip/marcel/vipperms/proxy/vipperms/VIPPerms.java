@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
+import redis.clients.jedis.Jedis;
 import vip.marcel.vipperms.proxy.vipperms.api.PermissionsGroup;
 import vip.marcel.vipperms.proxy.vipperms.api.PermissionsPlayer;
 import vip.marcel.vipperms.proxy.vipperms.api.values.GroupValue;
@@ -40,6 +41,8 @@ public final class VIPPerms extends Plugin {
 
     private MySQL mySQL;
 
+    private Jedis jedis;
+
     @Override
     public void onEnable() {
         instance = this;
@@ -54,6 +57,7 @@ public final class VIPPerms extends Plugin {
 
     @Override
     public void onDisable() {
+        disconnectRedis();
         this.mySQL.disconnect();
     }
 
@@ -75,6 +79,7 @@ public final class VIPPerms extends Plugin {
 
         this.mySQL = new MySQL();
         this.mySQL.connect();
+        connectRedis();
     }
 
     private void registerListeners() {
@@ -92,6 +97,26 @@ public final class VIPPerms extends Plugin {
             this.permissionsGroups.put(uuid, permissionsGroup);
             getLogger().log(Level.INFO, "Group '" + permissionsGroup.getName() + "' loaded into cache.");
         }
+    }
+
+    public void connectRedis() {
+
+        final String hostname = this.mySQL.getConfiguration().getConfiguration().getString("Database.Redis.Hostname");
+        final int port = this.mySQL.getConfiguration().getConfiguration().getInt("Database.Redis.Port");
+        final String username = this.mySQL.getConfiguration().getConfiguration().getString("Database.Redis.Username");
+        final String password = this.mySQL.getConfiguration().getConfiguration().getString("Database.Redis.Password");
+
+        this.jedis = new Jedis(hostname, port, 5000);
+        this.jedis.auth(username, password);
+
+        getLogger().log(Level.INFO, "Redis connection successfully opend!");
+    }
+
+    public void disconnectRedis() {
+        this.jedis.close();
+        this.jedis = null;
+
+        getLogger().log(Level.INFO, "Redis connection successfully closed!");
     }
 
     public List<PermissionsGroup> getPermissionsGroups() {
@@ -123,7 +148,11 @@ public final class VIPPerms extends Plugin {
     }
 
     public PermissionsPlayer getPermissionsPlayer(UUID uuid) {
-        return new PermissionsPlayerCache(uuid, this.permissionsPlayers);
+        if(this.permissionsPlayers.containsKey(uuid)) {
+            return new PermissionsPlayerCache(uuid, this.permissionsPlayers);
+        } else {
+            return new PermissionsPlayerService(uuid);
+        }
     }
 
     public void getPermissionsPlayer(UUID uuid, Consumer<PermissionsPlayer> callback, boolean reloadCache) {
@@ -293,6 +322,10 @@ public final class VIPPerms extends Plugin {
 
     public MySQL getMySQL() {
         return this.mySQL;
+    }
+
+    public Jedis getJedis() {
+        return this.jedis;
     }
 
 }

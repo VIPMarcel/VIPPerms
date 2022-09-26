@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="vipperms@localhost" uuid="cef47c48-7681-4702-8db4-b2dc8a340e3a">
-      <driver-ref>mysql.8</driver-ref>
+    <data-source source="LOCAL" name="MariaDB - vipperms@195.88.87.140" uuid="5e9f2cd6-1f07-4e5d-91d0-684e51379bb1">
+      <driver-ref>mariadb</driver-ref>
       <synchronize>true</synchronize>
-      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://localhost:3306/vipperms</jdbc-url>
+      <remarks>toms root</remarks>
+      <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mariadb://195.88.87.140:3306/vipperms</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

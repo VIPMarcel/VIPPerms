@@ -98,4 +98,8 @@ public class MySQL {
         return this.databasePlayers;
     }
 
+    public DatabaseConfiguration getConfiguration() {
+        return this.databaseConfiguration;
+    }
+
 }
