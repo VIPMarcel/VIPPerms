@@ -26,11 +26,17 @@ public class AsyncPlayerChatListener implements Listener {
             final PermissionsPlayer permissionsPlayer = VIPPerms.getInstance().getPermissionsPlayer(player.getUniqueId());
             final PermissionsGroup permissionsGroup = VIPPerms.getInstance().getPermissionsGroup(permissionsPlayer.getGroupId());
 
+            String message = event.getMessage().replaceAll("%", "%%");
+
+            if(player.hasPermission("cloudlegends.chatcolor")) {
+                message = ChatColor.translateAlternateColorCodes('&', message);
+            }
+
             format = format.replace("{prefix}", permissionsGroup.getPrefix());
             format = format.replace("{color}", permissionsGroup.getColor());
             format = format.replace("{suffix}", permissionsGroup.getSuffix());
             format = format.replace("{player}", player.getName());
-            format = format.replace("{message}", event.getMessage().replaceAll("%", "%%"));
+            format = format.replace("{message}", message);
 
             event.setFormat(format);
 

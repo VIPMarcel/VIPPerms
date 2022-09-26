@@ -202,7 +202,7 @@ public class VIPPerms extends JavaPlugin {
 
     /* Synchronized method!!! (no delay at login-event)  */
     public void getPermissionsPlayer(UUID uuid, Consumer<PermissionsPlayer> callback, boolean reloadCache) {
-        CompletableFuture.runAsync(() -> {
+        //CompletableFuture.runAsync(() -> {
             final PermissionsPlayerService permissionsPlayerService = new PermissionsPlayerService(uuid);
 
             if(!this.permissionsPlayers.containsKey(permissionsPlayerService.getUUID()) | reloadCache) {
@@ -210,7 +210,7 @@ public class VIPPerms extends JavaPlugin {
             }
 
             callback.accept(permissionsPlayerService);
-        });
+        //});
     }
 
     public PermissionsPlayer getPermissionsPlayer(String name) {
